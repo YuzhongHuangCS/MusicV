@@ -19,9 +19,9 @@
 		console.log 'a.init fired'
 		# globals & state
 		self.state = 
-			playlist: ['dawn.mp3', 'forgot.mp3']
-			width: $(document).width()
-			height: $(document).height()
+			playlist: ['forgot.mp3', 'Animal.wav', 'forgot.mp3', 'Go.mp3', 'Johann_Strauss.mp3', 'Let_Me_Hit_It.mp3', 'Sunrise.mp3', 'The_Mass.mp3']
+			width: $(document).width() * 3
+			height: $(document).height() * 3
 			sliderVal: 50
 			canKick: true
 			metaLock: false
@@ -31,11 +31,13 @@
 			trigger: 'circle'
 			hud: 1
 			active: null
-			vizNum: 0
+			vizNum: 6
 			thumbs_init: [0, 0, 0, 0, 0, 0, 0, 0]
-			theme: 0
+			theme: 4
 			currentSong: 0
 
+		h.themeChange(4)
+		h.vizChange(6)
 		self.context = new (window.AudioContext || window.webkitAudioContext)()
 
 		# append main svg element
@@ -48,35 +50,51 @@
 		a.loadSound()
 
 		# build svg
+		'''
 		canvas = document.getElementById('canvas-blended')
 		ctx = canvas.getContext('2d')
 		ctx.fillStyle = '#FF0000'
 		ctx.strokeStyle = '#00FF00'
 		ctx.lineWidth = 5
 		console.log 'Inintializing'
+		'''
 		camMotion = CamMotion.Engine()
-		console.log camMotion
 		camMotion.on 'error', (e) ->
 			console.log 'error', e
-
-		console.log camMotion
 		camMotion.on 'streamInit', (e) ->
 			console.log 'webcam stream initialized', e
 
+		xPos = 0
+		yPos = 0
+		rPos = 1
+		xSpeed = 0
+		ySpeed = 0
+		rSpeed = 0
+
+		lastX = 2100
+		lastY = 1800
+
 		camMotion.on 'frame', ->
-			ctx.clearRect 0, 0, 640, 480
 			point = camMotion.getMovementPoint(true)
-			console.log point
-			# draw a circle
-			ctx.beginPath()
-			ctx.arc point.x, point.y, point.r, 0, Math.PI * 2, true
-			ctx.closePath()
 			if camMotion.getAverageMovement(point.x - point.r / 2, point.y - point.r / 2, point.r, point.r) > 4
-				ctx.fill()
-				str = 'rotateX(' + point.x / 10 + 'deg)' + 'rotateY(' + point.y / 10 + 'deg)'
-				$('svg').css 'transform', str
-			else
-				ctx.stroke()
+				#	log point
+				xSpeed += (point.x - lastX) * 2
+				ySpeed += (point.y - lastY) * 2
+				#rSpeed *= point.r / 200
+
+				xPos += xSpeed
+				yPos += ySpeed
+				#rPos *= rSpeed
+
+				$('svg#viz').css('top', yPos)
+				$('svg#viz').css('left', xPos)
+				#$('svg#viz').css('transform', 'scale(' + rPos + ')')
+
+			xSpeed *= 0.5
+			ySpeed *= 0.5
+			lastX = point.x
+			lastY = point.y
+			#rSpeed *= 0.8
 
 		camMotion.start()
 
@@ -109,7 +127,6 @@
 
 		$('.icon-expand').on click, h.toggleFullScreen
 		$('.icon-microphone').on click, a.microphone
-		$('.sc_import').on click, a.soundCloud
 		$('.icon-question').on click, ->
 			h.showModal '#modal-about'
 
@@ -339,8 +356,8 @@
 
 			#analyser.getByteTimeDomainData(waveform_array);
 			# if (c.kickDetect(95)) {
-			# 	h.themeChange(Math.floor(Math.random() * 6));
-			#  	h.vizChange(Math.floor(Math.random() * 7));
+			#   h.themeChange(Math.floor(Math.random() * 6));
+			#   h.vizChange(Math.floor(Math.random() * 7));
 			# }
 			# draw all thumbnails
 			r.circle_thumb()
@@ -414,7 +431,7 @@
 			if i % 2 == 0 and neg
 				numbers2[i] = -Math.abs(numbers2[i])
 			i++
-		numbers2
+		return numbers2
 
 	c.normalize_binned = (binsize, coef, offset, neg) ->
 		numbers = []
@@ -495,9 +512,9 @@
 			d
 		)
 		# bars.attr("r", function(d) { return x(d) + ""; })
-		# 	.attr('transform', "scale("+slideScale(state.sliderVal)+")")
-		# 	.attr("cy", function(d, i) { return '50%'; })
-		# 	.attr("cx", function(d, i) { return '50%'; });
+		#   .attr('transform', "scale("+slideScale(state.sliderVal)+")")
+		#   .attr("cy", function(d, i) { return '50%'; })
+		#   .attr("cx", function(d, i) { return '50%'; });
 		bars.enter().append('circle').attr('transform', 'scale(' + slideScale(state.sliderVal) + ')').attr('cy', (d, i) ->
 			'50%'
 		).attr('cx', (d, i) ->
@@ -523,8 +540,8 @@
 			d
 		)
 		# bars_t1.attr("r", function(d) { return x_t1(d) + ""; })
-		# 	.attr("cy", function(d, i) { return '50%'; })
-		# 	.attr("cx", function(d, i) { return '50%'; });
+		#   .attr("cy", function(d, i) { return '50%'; })
+		#   .attr("cx", function(d, i) { return '50%'; });
 		bars_t1.enter().append('circle').attr('cy', (d, i) ->
 			'50%'
 		).attr('cx', (d, i) ->
@@ -733,7 +750,7 @@
 		if state.thumbs_init[3] == 'init'
 			xx = c.total() / 100 + 1
 			xx = if xx == 1 then 0 else xx
-			#	xx = (xx>1.4) ? 1.4 : xx;
+			#   xx = (xx>1.4) ? 1.4 : xx;
 			style = ''
 			i = 0
 			while i < state.vendors.length
@@ -743,11 +760,11 @@
 			# step = Math.floor((c.total()/100)*5);
 			# step = (step<1) ? 1 : step;
 			# graticule = d3.geo.graticule()
-			# 	.minorStep([step, step])
-			# 	.minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+			#   .minorStep([step, step])
+			#   .minorExtent([[-180, -90], [180, 90 + 1e-4]]);
 			# grat.datum(graticule)
-			# 	.attr("class", "graticule")
-			# 	.attr("d", path);
+			#   .attr("class", "graticule")
+			#   .attr("d", path);
 			return
 		state.thumbs_init[3] = 'init'
 		$('#grid svg').empty()
@@ -848,14 +865,15 @@
 		# http://bl.ocks.org/mbostock/4248146
 		$('body > svg').empty()
 		if state.active != 'hexbin'
-			randomX = d3.random.normal(state.width / 2, 700)
+			randomX = d3.random.normal(state.width / 2, 2100)
 			self.ps = d3.range(1024).map ->
-				return randomX()
+					return randomX()
 
 		state.active = 'hexbin'
 		points = d3.zip(self.ps, c.normalize(state.height, 0))
-		#randomY = d3.random.normal(height / 2, 300),
-		#points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+		#randomY = d3.random.normal(state.height / 2, 900)
+		#points = d3.range(1000).map ->
+		#   return [randomX(), randomY()]
 		color = d3.scale.linear()
 			.domain([0, 20])
 			.range([$('.dotstyle li.current a').css('background-color'), $('.dotstyle li.current a').css('background-color')])
@@ -867,7 +885,7 @@
 
 		radius = d3.scale.linear()
 			.domain([0, 20])
-			.range([0, 130]);
+			.range([3, 200]);
 
 		svg.append('g').selectAll('.hexagon').data(hexbin(points)).enter().append('path').attr('class', 'hexagon').attr('id', 'hexx').attr('d', (d) ->
 			hexbin.hexagon radius(d.length)
@@ -876,7 +894,16 @@
 		).style('fill', (d) ->
 			color d.length
 		).style 'opacity', (d) ->
-			0.8 - radius(d.length) / 180
+			if radius(d.length) / 180 > 0.6
+				return 0;
+			else
+				if (radius(d.length)/180 > 0.4)
+					if (Math.random()>0.1)
+						return 0;
+					else
+						return 0.25+(radius(d.length)/180)*1.8
+				else
+					return 0.25+(radius(d.length)/180)*1.8;
 
 	r.hexbin_thumb = ->
 		# http://bl.ocks.org/mbostock/4248145 
@@ -898,17 +925,17 @@
 		points_t7 = d3.zip(self.ps_t7, c.normalize(height*1.5, -20))
 
 		color_t7 = d3.scale.linear()
-		    .domain([0, 50])
-		    .range(["black", "white"])
-		    .interpolate(d3.interpolateLab);
+			.domain([0, 50])
+			.range(["black", "white"])
+			.interpolate(d3.interpolateLab);
 
 		hexbin_t7 = d3.hexbin()
-		    .size([width, height])
-		    .radius(15);
+			.size([width, height])
+			.radius(15);
 
 		radius_t7 = d3.scale.linear()
-		    .domain([0, 10])
-		    .range([0, 15]);
+			.domain([0, 10])
+			.range([0, 15]);
 
 		svg_thumb_seven.append('g')
 			.selectAll('.hexagon')
@@ -949,11 +976,11 @@
 		  return [Math.random() * width, Math.random() * height];
 
 		voronoi = d3.geom.voronoi()
-		    .clipExtent([[0, 0], [width, height]]);
+			.clipExtent([[0, 0], [width, height]]);
 
 		svg = d3.select("body").append("svg")
-		    .attr("width", width)
-		    .attr("height", height);
+			.attr("width", width)
+			.attr("height", height);
 
 		path = svg.append("g").selectAll("path");
 
@@ -1042,8 +1069,8 @@
 
 	h.resize = ->
 		console.log 'h.resize fired'
-		state.width = $(window).width()
-		state.height = $(window).height()
+		state.width = $(window).width() * 3
+		state.height = $(window).height() * 3
 		state.active = state.trigger
 		$('body > svg').attr('width', state.width).attr 'height', state.height
 		full = document.fullscreen or document.webkitIsFullScreen or document.mozFullScreen
@@ -1057,7 +1084,6 @@
 	h.handleDrop = (e) ->
 		console.log 'h.handleDrop fired'
 		h.stop e
-		h.removeSoundCloud()
 		#if (window.File && window.FileReader && window.FileList && window.Blob) {
 		URL.revokeObjectURL objectUrl
 		file = e.originalEvent.dataTransfer.files[0]
