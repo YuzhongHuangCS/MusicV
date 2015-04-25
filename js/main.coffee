@@ -16,7 +16,7 @@
 	a.init = ->
 		console.log 'a.init fired'
 		# globals & state
-		self.State = 
+		self.state = 
 			playlist: ['dawn.mp3', 'forgot.mp3']
 			width: $(document).width()
 			height: $(document).height()
@@ -37,7 +37,7 @@
 		self.context = new (window.AudioContext || window.webkitAudioContext)()
 
 		# append main svg element
-		self.svg = d3.select('body').append('svg').attr('id', 'viz').attr('width', State.width).attr('height', State.height)
+		self.svg = d3.select('body').append('svg').attr('id', 'viz').attr('width', state.width).attr('height', state.height)
 
 		a.bind()
 
@@ -118,8 +118,8 @@
 			audio.muted = if `audio.muted == true` then false else true
 
 		$('.icon-loop-on').on click, ->
-			$(this).find('b').text State.loopText[State.loop % 4]
-			h.infiniteChange State.loopDelay[State.loop++ % 4]
+			$(this).find('b').text state.loopText[state.loop % 4]
+			h.infiniteChange state.loopDelay[state.loop++ % 4]
 
 		$('.md-close').on click, h.hideModals
 		$('.dotstyle').on click, 'li', ->
@@ -136,11 +136,10 @@
 		$(document).on 'dragenter', h.stop
 		$(document).on 'dragover', h.stop
 		$(document).on 'drop', h.handleDrop
-		document.addEventListener 'waveform', (e) ->
+		$(document).on 'waveform', (e) ->
 			#console.log(e.detail);
 			waveform_array = e.detail
 			#audio = this;
-		, false
 
 		# hide HUD on idle mouse
 		hide = setTimeout ->
@@ -153,7 +152,6 @@
 			hide = setTimeout ->
 				h.hideHUD()
 			, 2000
-
 
 		# update state on window resize
 		window.onresize = (event) ->
@@ -186,35 +184,34 @@
 			h.changeSong 'p'
 
 		Mousetrap.bind '1', ->
-			State.trigger = 'circle'
+			state.trigger = 'circle'
 
 		Mousetrap.bind '3', ->
-			State.trigger = 'icosahedron'
+			state.trigger = 'icosahedron'
 
 		Mousetrap.bind '4', ->
-			State.trigger = 'grid'
+			state.trigger = 'grid'
 
 		Mousetrap.bind '6', ->
-			State.trigger = 'spin'
+			state.trigger = 'spin'
 
 		Mousetrap.bind '7', ->
-			State.trigger = 'hexbin'
+			state.trigger = 'hexbin'
 
 		Mousetrap.bind '8', ->
-			State.trigger = 'voronoi'
+			state.trigger = 'voronoi'
 
 		Mousetrap.bind 'up', ->
-			h.vizChange State.vizNum - 1
+			h.vizChange state.vizNum - 1
 
 		Mousetrap.bind 'down', ->
-			h.vizChange State.vizNum + 1
+			h.vizChange state.vizNum + 1
 
 		Mousetrap.bind 'left', ->
-			h.themeChange State.theme - 1
+			h.themeChange state.theme - 1
 
 		Mousetrap.bind 'right', ->
-			h.themeChange State.theme + 1
-
+			h.themeChange state.theme + 1
 
 	a.loadSound = ->
 		console.log 'a.loadSound fired'
@@ -224,16 +221,15 @@
 			a.loadSoundAJAX()
 		else
 			console.log ' -- sound loaded via html5 audio'
-			path = 'mp3/' + State.playlist[0]
+			path = 'mp3/' + state.playlist[0]
 			a.loadSoundHTML5 path
 			h.readID3 path
-		return
 
 	a.loadSoundAJAX = ->
 		console.log 'a.loadSoundAJAX fired'
 		audio = null
 		request = new XMLHttpRequest
-		request.open 'GET', 'mp3/' + State.playlist[0], true
+		request.open 'GET', 'mp3/' + state.playlist[0], true
 		request.responseType = 'arraybuffer'
 
 		request.onload = (event) ->
@@ -251,24 +247,22 @@
 		#audio.controls = true;
 		#audio.loop = true;
 		audio.autoplay = true
-		audio.addEventListener 'ended', (->
+		audio.addEventListener 'ended', ->
 			h.songEnded()
-			return
-		), false
+		, false
 		$('#audio_box').empty()
 		document.getElementById('audio_box').appendChild audio
 		a.audioBullshit()
-		return
 
 	a.microphone = ->
 		console.log 'a.microphone fired'
 		navigator.getUserMedia = navigator.getUserMedia or navigator.webkitGetUserMedia or navigator.mozGetUserMedia or navigator.msGetUserMedia
-		if `micStream == null`
+		if not micStream?
 			if navigator.getUserMedia
-				navigator.getUserMedia {
+				navigator.getUserMedia
 					audio: true
 					video: false
-				}, ((stream) ->
+				, (stream) ->
 					console.log ' --> audio being captured'
 					micStream = stream
 					console.log micStream
@@ -279,7 +273,7 @@
 					audio.pause()
 					#audio.src = null;
 					return
-				), h.microphoneError
+				, h.microphoneError
 			else
 				# fallback.
 		else
@@ -331,17 +325,17 @@
 		window.requestAnimationFrame = window.requestAnimationFrame or window.mozRequestAnimationFrame or window.webkitRequestAnimationFrame or window.msRequestAnimationFrame
 		window.requestAnimationFrame a.frameLooper
 		`now = Date.now()`
-		`delta = now - State.then`
+		`delta = now - state.then`
 		if audio
 			$('#progressBar').attr 'style', 'width: ' + audio.currentTime / audio.duration * 100 + '%'
 		# some framerate limiting logic -- http://codetheory.in/controlling-the-frame-rate-with-requestanimationframe/
-		if delta > State.drawInterval
-			State.then = now - delta % State.drawInterval
+		if delta > state.drawInterval
+			state.then = now - delta % state.drawInterval
 			# update waveform data
-			if `h.detectEnvironment() != 'chrome-extension'`
-				waveform_array = new Uint8Array(analyser.frequencyBinCount)
-				analyser.getByteFrequencyData waveform_array
-				#analyser.getByteTimeDomainData(waveform_array);
+			waveform_array = new Uint8Array(analyser.frequencyBinCount)
+			analyser.getByteFrequencyData waveform_array
+
+			#analyser.getByteTimeDomainData(waveform_array);
 			# if (c.kickDetect(95)) {
 			# 	h.themeChange(Math.floor(Math.random() * 6));
 			#  	h.vizChange(Math.floor(Math.random() * 7));
@@ -353,27 +347,27 @@
 			r.spin_thumb()
 			r.hexbin_thumb()
 			# draw active visualizer
-			switch State.trigger
+			switch state.trigger
 				when 'circle', 0
-					State.vizNum = 0
+					state.vizNum = 0
 					r.circle()
 				when 'icosahedron', 2
-					State.vizNum = 2
+					state.vizNum = 2
 					r.icosahedron()
 				when 'grid', 3
-					State.vizNum = 3
+					state.vizNum = 3
 					r.grid()
 				when 'spin', 5
-					State.vizNum = 5
+					state.vizNum = 5
 					r.spin()
 				when 'hexbin', 6
-					State.vizNum = 6
+					state.vizNum = 6
 					r.hexbin()
 				when 'voronoi', 7
-					State.vizNum = 7
+					state.vizNum = 7
 					r.voronoi()
 				else
-					State.vizNum = 0
+					state.vizNum = 0
 					r.circle()
 					break
 		return
@@ -391,19 +385,17 @@
 				old_waveform[i] - n
 		)
 		s = d3.sum(deltas) / 1024
-		if s > threshold and State.canKick
+		if s > threshold and state.canKick
 			kick = true
-			State.canKick = false
+			state.canKick = false
 			setTimeout (->
-				State.canKick = true
+				state.canKick = true
 				return
 			), 5000
 		self.old_waveform = waveform_array
 		kick
 
 	c.normalize = (coef, offset, neg) ->
-		`var offset`
-		`var coef`
 		#https://stackoverflow.com/questions/13368046/how-to-normalize-a-list-of-positive-numbers-in-javascript
 		coef = coef or 1
 		offset = offset or 0
@@ -462,7 +454,6 @@
 		copy
 
 	c.bins_avg = (binsize) ->
-		`var binsize`
 		binsize = binsize or 100
 		copy = []
 		temp = 0
@@ -480,8 +471,8 @@
 	r = {}
 
 	r.circle = ->
-		if `State.active != 'circle'`
-			State.active = 'circle'
+		if `state.active != 'circle'`
+			state.active = 'circle'
 			$('body > svg').empty()
 		WAVE_DATA = c.bins_select(70)
 		x = d3.scale.linear().domain([
@@ -502,10 +493,10 @@
 			d
 		)
 		# bars.attr("r", function(d) { return x(d) + ""; })
-		# 	.attr('transform', "scale("+slideScale(State.sliderVal)+")")
+		# 	.attr('transform', "scale("+slideScale(state.sliderVal)+")")
 		# 	.attr("cy", function(d, i) { return '50%'; })
 		# 	.attr("cx", function(d, i) { return '50%'; });
-		bars.enter().append('circle').attr('transform', 'scale(' + slideScale(State.sliderVal) + ')').attr('cy', (d, i) ->
+		bars.enter().append('circle').attr('transform', 'scale(' + slideScale(state.sliderVal) + ')').attr('cy', (d, i) ->
 			'50%'
 		).attr('cx', (d, i) ->
 			'50%'
@@ -515,8 +506,8 @@
 		return
 
 	r.circle_thumb = ->
-		if `State.thumbs_init[0] != 'init'`
-			State.thumbs_init[0] = 'init'
+		if state.thumbs_init[0] != 'init'
+			state.thumbs_init[0] = 'init'
 			self.svg_thumb_one = d3.select('#circle').append('svg').attr('width', '100%').attr('height', '100%')
 		WAVE_DATA = c.bins_select(200)
 		x_t1 = d3.scale.linear().domain([
@@ -543,13 +534,13 @@
 
 	r.icosahedron = ->
 		# http://bl.ocks.org/mbostock/7782500
-		if `State.active == 'icosahedron'`
+		if state.active == 'icosahedron'
 			time = Date.now() - t0
 			xx = c.total() / 100
 			style = ''
 			i = 0
-			while i < State.vendors.length
-				style += State.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
+			while i < state.vendors.length
+				style += state.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
 				i++
 			$('body > svg path').attr 'style', style
 			#$('body > svg path').attr("style", "transform: skew("+xx+"deg,"+xx+"deg)");
@@ -596,10 +587,10 @@
 			).attr 'd', (d) ->
 				'M' + d.polygon.join('L') + 'Z'
 			return
-		State.active = 'icosahedron'
+		state.active = 'icosahedron'
 		$('body > svg').empty()
-		width = State.width
-		height = State.height
+		width = state.width
+		height = state.height
 		self.velocity = [0.10, 0.005]
 		self.velocity2 = [-0.10, -0.05]
 		self.velocity3 = [0.10, 0.1]
@@ -645,36 +636,30 @@
 		svg3 = d3.select('body').append('svg').attr('class', 'isoco3').attr('width', width).attr('height', height)
 		self.face3 = svg3.selectAll('path').data(h.icosahedronFaces).enter().append('path').attr('class', 'isoco').each((d) ->
 			d.polygon = d3.geom.polygon(d.map(projection3))
-			return
 		)
-		return
 
 	r.icosahedron_thumb = ->
-		if `State.thumbs_init[2] == 'init'`
+		if state.thumbs_init[2] == 'init'
 			xx_t0 = c.total() / 100
 			time_t0 = Date.now() - t0_thumb
 			style = ''
 			i = 0
-			while i < State.vendors.length
-				style += State.vendors[i] + 'transform: scale(' + xx_t0 + ',' + xx_t0 + '); '
+			while i < state.vendors.length
+				style += state.vendors[i] + 'transform: scale(' + xx_t0 + ',' + xx_t0 + '); '
 				i++
 			$('#icosahedron svg path').attr 'style', style
 			projection_thumb.rotate [
 				time_t0 * velocity_thumb[0]
 				time_t0 * velocity_thumb[1]
 			]
-			'''
 			self.face_thumb.each((d) ->
 				d.forEach (p, i) ->
 					d.polygon[i] = projection_thumb(p)
-					return
-				return
 			).style('display', (d) ->
 				if d.polygon.area() > 0 then null else 'none'
 			).attr 'd', (d) ->
 				'M' + d.polygon.join('L') + 'Z'
-			'''
-		State.thumbs_init[2] = 'init'
+		state.thumbs_init[2] = 'init'
 		width = $('#icosahedron').width()
 		height = $('#icosahedron').height()
 		self.velocity_thumb = [
@@ -693,45 +678,29 @@
 		self.svg_thumb_three = d3.select('#icosahedron').append('svg').attr('width', width).attr('height', height)
 		self.face_thumb = svg_thumb_three.selectAll('path').data(h.icosahedronFaces).enter().append('path').each((d) ->
 			d.polygon = d3.geom.polygon(d.map(projection_thumb))
-			return
 		)
 
 	r.grid2 = (data) ->
 		# http://bl.ocks.org/mbostock/5731578
-		if `State.active == 'grid'`
+		if state.active == 'grid'
 			dt = Date.now() - time
 			projection.rotate [
 				rotate[0] + velocity[0] * dt
 				rotate[1] + velocity[1] * dt
 			]
 			feature.attr 'd', path
-			return
 		$('body > svg').empty()
-		State.active = 'grid'
-		self.rotate = [
-			10
-			-10
-		]
-		self.velocity = [
-			.03
-			-.01
-		]
+		state.active = 'grid'
+		self.rotate = [10, -10]
+		self.velocity = [0.03, -0.01]
 		self.time = Date.now()
 		self.projection = d3.geo.orthographic().scale(240).translate([
-			State.width / 2
-			State.height / 2
+			state.width / 2
+			state.height / 2
 		]).clipAngle(90 + 1e-6).precision(.3)
 		self.path = d3.geo.path().projection(projection)
-		`graticule = d3.geo.graticule().minorExtent([
-	[
-		-180,
-		-89
-	],
-	[
-		180,
-		89 + 0.0001
-	]
-])`
+		graticule = d3.geo.graticule().minorExtent([[-180, -89], [180, 89 + 1e-4]]);
+
 		svg.append('path').datum(type: 'Sphere').attr('class', 'sphere').attr 'd', path
 		svg.append('path').datum(graticule).attr('class', 'graticule').attr 'd', path
 		# svg.append("path")
@@ -739,92 +708,63 @@
 		#     .attr("class", "equator")
 		#     .attr("d", path);
 		self.feature = svg.selectAll('path')
-		return
 
 	r.grid = (data) ->
-		if `State.active == 'grid'`
+		if state.active == 'grid'
 			xx = c.total() / 100 + 1
 			xx = if xx < 1 then 1 else xx
 			xx = if xx > 1.1 then 1.1 else xx
 			style = ''
 			i = 0
-			while i < State.vendors.length
-				style += State.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
+			while i < state.vendors.length
+				style += state.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
 				i++
 			$('body > svg path').attr 'style', style
-			projection.rotate [
-				λ(p)
-				φ(p)
-			]
+			projection.rotate [λ(p), φ(p)]
 			#projection.rotate([λ(p), 0]);
 			svg.selectAll('path').attr 'd', path
-			`p = p + 5`
+			p = p + 5
 			#((c.total()/100)*10);
-			`step = Math.floor(c.total() / 100 * 60)`
-			`step = step < 5 ? 5 : step`
-			`graticule = d3.geo.graticule().minorStep([
-	step,
-	step
-]).minorExtent([
-	[
-		-180,
-		-90
-	],
-	[
-		180,
-		90 + 0.0001
-	]
-])`
+			step = Math.floor(c.total() / 100 * 60)
+			step = step < 5 ? 5 : step
+			graticule = d3.geo.graticule().minorStep([step, step]).minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+
 			grat.datum(graticule).attr('class', 'graticule').attr 'd', path
-			return
-		`p = 0`
-		State.active = 'grid'
+		
+		p = 0
+		state.active = 'grid'
 		$('body > svg').empty()
-		`projection = d3.geo.gnomonic().clipAngle(80).scale(500)`
-		`path = d3.geo.path().projection(projection)`
-		`graticule = d3.geo.graticule().minorStep([
-	5,
-	5
-]).minorExtent([
-	[
-		-180,
-		-90
-	],
-	[
-		180,
-		90 + 0.0001
-	]
-])`
+		projection = d3.geo.gnomonic()
+			.clipAngle(80)
+			.scale(500)
+		path = d3.geo.path().projection(projection)
+		graticule = d3.geo.graticule().minorStep([5, 5]).minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+
 		# lamda / longitude
-		`λ = d3.scale.linear().domain([
-	0,
-	State.width
-]).range([
-	-180,
-	180
-])`
+		λ = d3.scale.linear().domain([0, State.width]).range([-180, 180])
+
 		# phi / latitude
-		`φ = d3.scale.linear().domain([
-	0,
-	State.height
-]).range([
-	90,
-	-90
-])`
-		`grat = svg.append('path').datum(graticule).attr('class', 'graticule').attr('d', path)`
-		return
+		φ = d3.scale.linear()
+			.domain([0, State.height])
+			.range([90, -90]);
+		 
+		grat = svg.append("path")
+			.datum(graticule)
+			.attr("class", "graticule")
+			.attr("d", path);
+
 
 	r.grid_thumb = (data) ->
 		width = $('#grid').width()
 		height = $('#grid').height()
-		if `State.thumbs_init[3] == 'init'`
+		if state.thumbs_init[3] == 'init'
 			xx = c.total() / 100 + 1
 			xx = if `xx == 1` then 0 else xx
 			#	xx = (xx>1.4) ? 1.4 : xx;
 			style = ''
 			i = 0
-			while i < State.vendors.length
-				style += State.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
+			while i < state.vendors.length
+				style += state.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
 				i++
 			$('#grid svg path').attr 'style', style
 			# step = Math.floor((c.total()/100)*5);
@@ -836,30 +776,30 @@
 			# 	.attr("class", "graticule")
 			# 	.attr("d", path);
 			return
-		State.thumbs_init[3] = 'init'
+		state.thumbs_init[3] = 'init'
 		$('#grid svg').empty()
-		`projection = d3.geo.gnomonic().clipAngle(80)`
-		#.scale(50)
-		`path = d3.geo.path().projection(projection)`
-		`graticule = d3.geo.graticule().minorStep([
-	2,
-	2
-]).minorExtent([
-	[
-		-180,
-		-90
-	],
-	[
-		180,
-		90 + 0.0001
-	]
-])`
-		`svg_thumb_four = d3.select('#grid').append('svg').attr('width', width).attr('height', height)`
-		`grat = svg_thumb_four.append('path').datum(graticule).attr('class', 'graticule').attr('d', path)`
-		return
+		projection = d3.geo.gnomonic()
+			.clipAngle(80)
+			#.scale(50)
+
+		path = d3.geo.path()
+			.projection(projection);
+		
+		graticule = d3.geo.graticule()
+			.minorStep([2, 2])
+			.minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+ 
+		svg_thumb_four = d3.select("#grid").append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		grat = svg_thumb_four.append("path")
+			.datum(graticule)
+			.attr("class", "graticule")
+			.attr("d", path);
 
 	r.spin = ->
-		if `State.active == 'spin'`
+		if state.active == 'spin'
 			WAVE_DATA = c.total() * 2
 			#WAVE_DATA = c.normalize_binned(200,1000,10);
 			$c = $('body > svg circle')
@@ -868,7 +808,7 @@
 			$c.attr 'stroke-dasharray', WAVE_DATA / 6 + 'px'
 			$c.attr 'opacity', WAVE_DATA / 2200
 			return
-		State.active = 'spin'
+		state.active = 'spin'
 		$('body > svg').empty()
 		elems = [
 			{
@@ -888,18 +828,17 @@
 				radius: 50
 			}
 		]
-		`bars = svg.selectAll('circle').data(elems, function (d, i) {
-	return i;
-})`
+		bars = svg.selectAll("circle").data elems, (d,i)->
+			return i
+
 		bars.enter().append('circle').attr('class', 'spin').attr('cy', '50%').attr('cx', '50%').attr('id', (d) ->
 			d.id
 		).attr 'r', (d) ->
 			d.radius + ''
 		bars.exit().remove()
-		return
 
 	r.spin_thumb = ->
-		if `State.thumbs_init[5] == 'init'`
+		if state.thumbs_init[5] == 'init'
 			WAVE_DATA = c.total() * 2
 			#WAVE_DATA = c.normalize_binned(200,1000,10);
 			$c = $('#spin svg circle')
@@ -908,8 +847,9 @@
 			$c.attr 'stroke-dasharray', WAVE_DATA / 6 + 'px'
 			$c.attr 'opacity', WAVE_DATA / 2200
 			return
+
 		$('#spin svg').empty()
-		State.thumbs_init[5] = 'init'
+		state.thumbs_init[5] = 'init'
 		self.svg_thumb_six = d3.select('#spin').append('svg').attr('width', '100%').attr('height', '100%')
 		elems = [
 			{
@@ -921,47 +861,41 @@
 				radius: 50
 			}
 		]
-		`bars_t6 = svg_thumb_six.selectAll('circle').data(elems, function (d, i) {
-	return i;
-})`
+		bars_t6 = svg_thumb_six.selectAll("circle").data elems, (d,i)->
+			return i
+
 		bars_t6.enter().append('circle').attr('class', 'spin').attr('cy', '50%').attr('cx', '50%').attr('id', (d) ->
 			d.id
 		).attr 'r', (d) ->
 			d.radius + ''
 		bars_t6.exit().remove()
-		return
 
 	r.hexbin = ->
 		# http://bl.ocks.org/mbostock/4248145 
 		# http://bl.ocks.org/mbostock/4248146
 		$('body > svg').empty()
-		if `State.active != 'hexbin'`
-			`randomX = d3.random.normal(State.width / 2, 700)`
-			`ps = d3.range(1024).map(function () {
-	return randomX();
-})`
-		State.active = 'hexbin'
-		`points = d3.zip(ps, c.normalize(State.height, 0))`
+		if state.active != 'hexbin'
+			randomX = d3.random.normal(state.width / 2, 700)
+			ps = d3.range(1024).map ->
+				return randomX()
+
+		state.active = 'hexbin'
+		points = d3.zip(ps, c.normalize(state.height, 0))
 		#randomY = d3.random.normal(height / 2, 300),
 		#points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
-		`color = d3.scale.linear().domain([
-	0,
-	20
-]).range([
-	$('.dotstyle li.current a').css('background-color'),
-	$('.dotstyle li.current a').css('background-color')
-]).interpolate(d3.interpolateLab)`
-		`hexbin = d3.hexbin().size([
-	State.width,
-	State.height
-]).radius(50)`
-		`radius = d3.scale.linear().domain([
-	0,
-	20
-]).range([
-	0,
-	130
-])`
+		color = d3.scale.linear()
+			.domain([0, 20])
+			.range([$('.dotstyle li.current a').css('background-color'), $('.dotstyle li.current a').css('background-color')])
+			.interpolate(d3.interpolateLab);
+
+		hexbin = d3.hexbin()
+			.size([State.width, State.height])
+			.radius(50);
+
+		radius = d3.scale.linear()
+			.domain([0, 20])
+			.range([0, 130]);
+
 		svg.append('g').selectAll('.hexagon').data(hexbin(points)).enter().append('path').attr('class', 'hexagon').attr('id', 'hexx').attr('d', (d) ->
 			hexbin.hexagon radius(d.length)
 		).attr('transform', (d) ->
@@ -970,98 +904,90 @@
 			color d.length
 		).style 'opacity', (d) ->
 			0.8 - radius(d.length) / 180
-		return
 
 	r.hexbin_thumb = ->
 		# http://bl.ocks.org/mbostock/4248145 
 		# http://bl.ocks.org/mbostock/4248146
 		width = $('#hexbin').width()
 		height = $('#hexbin').height()
-		if `State.thumbs_init[6] != 'init'`
-			self.svg_thumb_seven = d3.select('#hexbin').append('svg').attr('width', '100%').attr('height', '100%')
-			State.thumbs_init[6] = 'init'
-			`randomX_t7 = d3.random.normal(width / 2, 50)`
-			`ps_t7 = d3.range(1024).map(function () {
-	return randomX_t7();
-})`
+		if state.thumbs_init[6] != 'init'
+			self.svg_thumb_seven = d3.select('#hexbin').append('svg')
+				.attr('width', '100%')
+				.attr('height', '100%')
+
+			state.thumbs_init[6] = 'init'
+			randomX_t7 = d3.random.normal(width / 2, 50)
+			self.ps_t7 = d3.range(1024).map ()->
+				return randomX_t7()
+			#console.log ps_t7
+
 		$('#hexbin svg').empty()
-		`points_t7 = d3.zip(ps_t7, c.normalize(height * 1.5, -20))`
-		`color_t7 = d3.scale.linear().domain([
-	0,
-	50
-]).range([
-	'black',
-	'white'
-]).interpolate(d3.interpolateLab)`
-		`hexbin_t7 = d3.hexbin().size([
-	width,
-	height
-]).radius(15)`
-		`radius_t7 = d3.scale.linear().domain([
-	0,
-	10
-]).range([
-	0,
-	15
-])`
-		svg_thumb_seven.append('g').selectAll('.hexagon').data(hexbin_t7(points_t7)).enter().append('path').attr('class', 'hexagon').attr('d', (d) ->
-			hexbin_t7.hexagon 15
-		).attr('transform', (d) ->
-			'translate(' + d.x + ',' + d.y + ')'
-		).style 'fill', (d) ->
-			color_t7 d.length
-		return
+		points_t7 = d3.zip(self.ps_t7, c.normalize(height*1.5, -20))
+
+		color_t7 = d3.scale.linear()
+		    .domain([0, 50])
+		    .range(["black", "white"])
+		    .interpolate(d3.interpolateLab);
+
+		hexbin_t7 = d3.hexbin()
+		    .size([width, height])
+		    .radius(15);
+
+		radius_t7 = d3.scale.linear()
+		    .domain([0, 10])
+		    .range([0, 15]);
+
+		svg_thumb_seven.append('g')
+			.selectAll('.hexagon')
+				.data(hexbin_t7(points_t7))
+			.enter().append('path')
+				.attr('class', 'hexagon')
+				.attr('d', (d) ->
+					hexbin_t7.hexagon 15
+				).attr('transform', (d) ->
+					'translate(' + d.x + ',' + d.y + ')'
+				).style 'fill', (d) ->
+					color_t7(d.length)
 
 	r.voronoi = ->
 		# http://bl.ocks.org/mbostock/4060366
 
 		redraw = ->
-			`vertices = d3.range(100).map(function (d) {
-	return [
-		Math.random() * width,
-		Math.random() * height
-	];
-})`
-			`path = path.data(voronoi(vertices), polygon)`
+			vertices = d3.range(100).map (d)->
+				return [Math.random() * width, Math.random() * height];
+
+			path = path.data(voronoi(vertices), polygon)
 			path.exit().remove()
 			path.enter().append('path').attr('class', (d, i) ->
 				'q' + i % 9 + '-9'
 			).attr 'd', polygon
 			path.order()
-			return
 
 		polygon = (d) ->
 			'M' + d.join('L') + 'Z'
 
-		if `State.active == 'voronoi'`
+		if state.active == 'voronoi'
 			redraw()
 			return
-		State.active = 'voronoi'
-		`width = State.width`
-		`height = State.height`
-		`vertices = d3.range(100).map(function (d) {
-	return [
-		Math.random() * width,
-		Math.random() * height
-	];
-})`
-		`voronoi = d3.geom.voronoi().clipExtent([
-	[
-		0,
-		0
-	],
-	[
-		width,
-		height
-	]
-])`
-		`svg = d3.select('body').append('svg').attr('width', width).attr('height', height)`
-		`path = svg.append('g').selectAll('path')`
+		state.active = 'voronoi'
+		width = state.width
+		height = state.height
+		vertices = d3.range(100).map (d)->
+		  return [Math.random() * width, Math.random() * height];
+
+		voronoi = d3.geom.voronoi()
+		    .clipExtent([[0, 0], [width, height]]);
+
+		svg = d3.select("body").append("svg")
+		    .attr("width", width)
+		    .attr("height", height);
+
+		path = svg.append("g").selectAll("path");
+
 		svg.selectAll('circle').data(vertices.slice(1)).enter().append('circle').attr('transform', (d) ->
 			'translate(' + d + ')'
 		).attr 'r', 1.5
 		redraw()
-		return
 
 	self.Render = r
 	# helper methods ///////////////////////////////////////////////////////////////////////////////
@@ -1107,9 +1033,8 @@
 		return
 
 	h.hideHUD = ->
-		#$('.icon-knobs').is(':hover') || 
-		if $('#mp3_player').is(':hover') or $('.dotstyle').is(':hover') or $('.slider').is(':hover') or $('.icon-expand').is(':hover') or $('.icon-github2').is(':hover') or $('.icon-loop-on').is(':hover') or $('.icon-question').is(':hover') or $('.icon-keyboard2').is(':hover') or $('.song-metadata').is(':hover') or $('.icon-forward2').is(':hover') or $('.icon-backward2').is(':hover') or $('.icon-pause').is(':hover') or $('.schover').is(':hover')
-			return
+		return if $('#mp3_player:hover') or $('.dotstyle:hover') or $('.slider:hover') or $('.icon-expand:hover') or $('.icon-github2:hover') or $('.icon-loop-on:hover') or $('.icon-question:hover') or $('.icon-keyboard2:hover') or $('.song-metadata:hover') or $('.icon-forward2:hover') or $('.icon-backward2:hover') or $('.icon-pause:hover') or $('.schover:hover')
+
 		$('#mp3_player').addClass 'fadeOut'
 		$('.icon-menu').addClass 'fadeOut'
 		$('.menu-wide').addClass 'fadeOut'
@@ -1117,10 +1042,9 @@
 		$('.menu-controls').addClass 'fadeOut'
 		$('#progressBar').addClass 'fadeOut'
 		$('html').addClass 'noCursor'
-		if `State.metaLock == false`
+		if `state.metaLock == false`
 			$('.song-metadata').removeClass 'show-meta'
-		State.hud = 0
-		return
+		state.hud = 0
 
 	h.showHUD = ->
 		$('#mp3_player').removeClass 'fadeOut'
@@ -1131,40 +1055,33 @@
 		$('#progressBar').removeClass 'fadeOut'
 		$('html').removeClass 'noCursor'
 		$('.song-metadata').addClass 'show-meta'
-		State.hud = 1
-		return
+		state.hud = 1
 
 	h.showModal = (id) ->
 		if $(id).hasClass('md-show')
 			h.hideModals()
-			return
 		if $('.md-show').length > 0
 			h.hideModals()
 		$(id).addClass 'md-show'
-		return
 
 	h.hideModals = ->
 		$('.md-modal').removeClass 'md-show'
-		return
 
 	h.resize = ->
 		console.log 'h.resize fired'
-		State.width = $(window).width()
-		State.height = $(window).height()
-		State.active = State.trigger
-		$('body > svg').attr('width', State.width).attr 'height', State.height
+		state.width = $(window).width()
+		state.height = $(window).height()
+		state.active = state.trigger
+		$('body > svg').attr('width', state.width).attr 'height', state.height
 		full = document.fullscreen or document.webkitIsFullScreen or document.mozFullScreen
 		if !full
 			$('.icon-expand').removeClass 'icon-contract'
-		return
 
 	h.stop = (e) ->
 		e.stopPropagation()
 		e.preventDefault()
-		return
 
 	h.handleDrop = (e) ->
-		`var objectUrl`
 		console.log 'h.handleDrop fired'
 		h.stop e
 		h.removeSoundCloud()
@@ -1173,20 +1090,19 @@
 		file = e.originalEvent.dataTransfer.files[0]
 		if !file.type.match(/audio.*/)
 			console.log 'not audio file'
-			return
+
 		h.readID3 file
 		objectUrl = URL.createObjectURL(file)
 		a.loadSoundHTML5 objectUrl
-		return
+
 
 	h.readID3 = (file) ->
 		console.log 'h.readID3 fired'
 		$('.song-metadata').html ''
-		if `typeof file == 'string'`
+		if typeof file == 'string'
 			ID3.loadTags audio.src, ->
 				tags = ID3.getAllTags(audio.src)
 				h.renderSongTitle tags
-				return
 		else
 			ID3.loadTags file.urn or file.name, (->
 				tags = ID3.getAllTags(file.urn or file.name)
@@ -1209,17 +1125,6 @@
 			), dataReader: FileAPIReader(file)
 		return
 
-	h.removeSoundCloud = ->
-		State.soundCloudURL = null
-		State.soundCloudData = null
-		State.soundCloudTracks = null
-		$('.song-metadata').html ''
-		$('.song-metadata').attr 'data-go', ''
-		$('#sc_input').val ''
-		$('#sc_url span').html 'SOUNDCLOUD_URL'
-		# load local songs?
-		return
-
 	h.togglePlay = ->
 		if audio and `audio.paused == false` then audio.pause() else audio.play()
 		$('.icon-pause').toggleClass 'icon-play'
@@ -1232,83 +1137,58 @@
 
 	h.changeSong = (direction) ->
 		console.log 'h.changeSong fired'
-		totalTracks = State.soundCloudTracks or State.playlist.length
-		if State.soundCloudData and State.soundCloudTracks <= 1
-			audio.currentTime = 0
-			$('.icon-pause').removeClass 'icon-play'
-			return
-		if `direction == 'n'`
-			State.currentSong = State.currentSong + 1
-		else if `direction == 'p'`
+		totalTracks = state.playlist.length
+		if direction == 'n'
+			state.currentSong = state.currentSong + 1
+		else if direction == 'p'
 			if audio.currentTime < 3
-				State.currentSong = if State.currentSong <= 0 then State.currentSong + totalTracks - 1 else State.currentSong - 1
+				state.currentSong = if state.currentSong <= 0 then state.currentSong + totalTracks - 1 else state.currentSong - 1
 			else
 				audio.currentTime = 0
 				$('.icon-pause').removeClass 'icon-play'
 				return
 		else
-			State.currentSong = Math.floor(Math.random() * totalTracks)
-		if State.soundCloudData
-			trackNum = Math.abs(State.currentSong) % State.soundCloudTracks
-			h.renderSongTitle State.soundCloudData[trackNum]
-			a.loadSoundHTML5 State.soundCloudData[trackNum].uri + '/stream?client_id=67129366c767d009ecc75cec10fa3d0f'
-		else
-			if audio
-				audio.src = 'mp3/' + State.playlist[Math.abs(State.currentSong) % State.playlist.length]
-				h.readID3 audio.src
+			state.currentSong = Math.floor(Math.random() * totalTracks)
+
+		if audio
+			audio.src = 'mp3/' + state.playlist[Math.abs(state.currentSong) % state.playlist.length]
+			h.readID3 audio.src
 		$('.icon-pause').removeClass 'icon-play'
-		return
 
 	h.renderSongTitle = (obj) ->
-		`var trackNum`
-		`var prettyTitle`
 		console.log 'h.renderSongTitle fired'
-		if State.soundCloudData
-			trackNum = Math.abs(State.currentSong) % State.soundCloudTracks
-			regs = new RegExp(obj.user.username, 'gi')
-			prettyTitle = obj.title
-			if `prettyTitle.search(regs) == -1`
-				prettyTitle += ' <b>' + obj.user.username + '</b>'
-			#var prettyTitle = obj.title.replace(regs, "<b>"+obj.user.username+"</b>");
-			if State.soundCloudTracks > 1
-				prettyTitle += ' [' + trackNum + 1 + '/' + State.soundCloudTracks + ']'
-			$('.song-metadata').html prettyTitle
-			$('.song-metadata').attr 'data-go', obj.permalink_url
-		else
-			# id3?
-			prettyTitle = '"' + obj.title + '" by <b>' + obj.artist + '</b>'
-			#  on <i>'+tags.album+'</i>
-			trackNum = Math.abs(State.currentSong) % State.playlist.length
-			if State.playlist.length > 1 and !obj.dragged
-				prettyTitle += ' [' + trackNum + 1 + '/' + State.playlist.length + ']'
-			$('.song-metadata').html prettyTitle
-			#$('.song-metadata').attr('data-go', State.playListLinks[trackNum]);
+
+		# id3?
+		prettyTitle = '"' + obj.title + '" by <b>' + obj.artist + '</b>'
+		#  on <i>'+tags.album+'</i>
+		trackNum = Math.abs(state.currentSong) % state.playlist.length
+		if state.playlist.length > 1 and !obj.dragged
+			prettyTitle += ' [' + trackNum + 1 + '/' + state.playlist.length + ']'
+		$('.song-metadata').html prettyTitle
+		#$('.song-metadata').attr('data-go', state.playListLinks[trackNum]);
 		$('.song-metadata').addClass 'show-meta'
-		State.metaLock = true
+		state.metaLock = true
 		clearTimeout metaHide
 		# in 3 seconds, remove class unless lock
-		metaHide = setTimeout((->
-			State.metaLock = false
-			if `State.hud == 0`
+		metaHide = setTimeout ->
+			state.metaLock = false
+			if state.hud == 0
 				$('.song-metadata').removeClass 'show-meta'
-			return
-		), 3000)
-		return
+		, 3000
 
 	h.tooltipReplace = ->
 		console.log 'h.tooltipReplace fired'
 		text = $(this).attr('data-hovertext')
 		console.log text
-		if `text != null`
-			State.hoverTemp = $('.song-metadata').html()
+		if text?
+			state.hoverTemp = $('.song-metadata').html()
 			$('.song-metadata').html text
-		return
 
 	h.tooltipUnReplace = ->
 		console.log 'h.tooltipUnReplace fired'
-		if `State.hoverTemp != null`
-			$('.song-metadata').html State.hoverTemp
-			State.hoverTemp = null
+		if state.hoverTemp?
+			$('.song-metadata').html state.hoverTemp
+			state.hoverTemp = null
 		return
 
 	h.songGo = ->
@@ -1324,34 +1204,30 @@
 		n = +n
 		n = if n < 0 then 5 else n
 		n = if n > 5 then 0 else n
-		State.theme = n
+		state.theme = n
 		console.log 'h.themeChange:' + n
 		name = 'theme_' + n
 		$('html').attr 'class', name
 		$('.dotstyle li.current').removeClass 'current'
 		$('.dotstyle li:eq(' + n + ')').addClass 'current'
-		return
 
 	h.vizChange = (n) ->
 		n = if n < 0 then 6 else n
 		n = if n > 6 then 0 else n
 		console.log 'h.vizChange:' + n
-		State.trigger = n
+		state.trigger = n
 		$('.menu li.active').removeClass 'active'
 		$('.menu li[viz-num="' + n + '"]').addClass 'active'
-		return
 
 	h.infiniteChange = (toggle) ->
 		console.log 'h.infiniteChange fired: ' + toggle
-		clearInterval State.changeInterval
-		State.changeInterval = setInterval((->
+		clearInterval state.changeInterval
+		state.changeInterval = setInterval ->
 			h.themeChange Math.floor(Math.random() * 6)
 			h.vizChange Math.floor(Math.random() * 8)
-			return
-		), toggle)
-		if `toggle == null`
-			clearInterval State.changeInterval
-		return
+		, toggle
+		if not toggle
+			clearInterval state.changeInterval
 
 	h.icosahedronFaces = (slide) ->
 		slide = slide or 180
@@ -1359,59 +1235,12 @@
 		y = Math.atan2(1, 2) * slide / Math.PI
 		x = 0
 		while x < 360
-			faces.push [
-				[
-					x + 0
-					-90
-				]
-				[
-					x + 0
-					-y
-				]
-				[
-					x + 72
-					-y
-				]
-			], [
-				[
-					x + 36
-					y
-				]
-				[
-					x + 72
-					-y
-				]
-				[
-					x + 0
-					-y
-				]
-			], [
-				[
-					x + 36
-					y
-				]
-				[
-					x + 0
-					-y
-				]
-				[
-					x - 36
-					y
-				]
-			], [
-				[
-					x + 36
-					y
-				]
-				[
-					x - 36
-					y
-				]
-				[
-					x - 36
-					90
-				]
-			]
+			faces.push(
+				[[x +  0, -90], [x +  0,  -y], [x + 72,  -y]],
+				[[x + 36,   y], [x + 72,  -y], [x +  0,  -y]],
+				[[x + 36,   y], [x +  0,  -y], [x - 36,   y]],
+				[[x + 36,   y], [x - 36,   y], [x - 36,  90]]
+			)
 			x += 72
 		faces
 
@@ -1427,40 +1256,13 @@
 	h.microphoneError = (e) ->
 		# user clicked not to let microphone be used
 		console.log e
-		return
-
-	h.getURLParameter = (sParam) ->
-		#http://www.jquerybyexample.net/2012/06/get-url-parameters-using-jquery.html
-		sPageURL = window.location.search.substring(1)
-		sURLVariables = sPageURL.split('&')
-		i = 0
-		while i < sURLVariables.length
-			sParameterName = sURLVariables[i].split('=')
-			if `sParameterName[0] == sParam`
-				return sParameterName[1]
-			i++
-		return
 
 	h.isMobile = ->
 		# returns true if user agent is a mobile device
-		/iPhone|iPod|iPad|Android|BlackBerry/.test navigator.userAgent
-
-	h.detectEnvironment = ->
-		if window.location.protocol.search('chrome-extension') >= 0
-			return 'chrome-extension'
-		if navigator.userAgent.search('Safari') >= 0 and navigator.userAgent.search('Chrome') < 0
-			return 'safari'
-		#  https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-		if ! !window.opera or navigator.userAgent.indexOf(' OPR/') >= 0
-			return 'opera'
-		if `typeof InstallTrigger != 'undefined'`
-			return 'firefox'
-		# var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
-		# var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
-		'unknown'
+		return /iPhone|iPod|iPad|Android|BlackBerry/.test navigator.userAgent
 
 	self.Helper = h
 	return
-).call this
+).call(this)
 
-$(document).ready App.init
+$(document).ready(App.init)

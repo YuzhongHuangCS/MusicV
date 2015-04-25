@@ -7,7 +7,7 @@ module.exports = (grunt)->
 		coffee:
 			compile:
 				files:
-					'js/main_new.js': ['js/main.coffee']
+					'js/main.js': ['js/main.coffee']
 		watch:
 			jade:
 		    	files: ['index.jade']
