@@ -1,0 +1,15 @@
+{
+	"name": "MusicV",
+	"version": "0.0.1",
+	"homepage": "musicv.sinaapp.com",
+	"license": "Apache License",
+	"private": true,
+	"dependencies": {
+		"jquery": "x",
+		"d3": "x",
+		"mousetrap": "x",
+		"id3js": "x",
+		"normalize.css": "x",
+		"icomoon": "x"
+	}
+}

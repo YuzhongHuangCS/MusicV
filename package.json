@@ -1,0 +1,13 @@
+{
+	"name": "MusicV",
+	"version": "0.0.1",
+	"devDependencies": {
+		"grunt": "x",
+		"grunt-contrib-jade": "x",
+		"grunt-contrib-jshint": "x",
+		"grunt-contrib-nodeunit": "x",
+		"grunt-contrib-uglify": "x",
+		"grunt-contrib-concat": "x",
+		"grunt-contrib-watch": "x"
+	}
+}
