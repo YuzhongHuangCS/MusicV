@@ -5,7 +5,7 @@ html
 		meta(http-equiv='X-UA-Compatible' content='IE=edge, chrome=1')
 		meta(name='renderer' content='webkit')
 		meta(name='viewport' content='width=device-width, initial-scale=1, user-scalable=no')
-		title MusicV Dance Your music
+		title MusicV :: Jump out of screen
 		link(rel='icon', href='favicon.ico', type='image/x-icon')
 		link(rel='stylesheet' href='bower_components/normalize.css/normalize.css')
 		link(rel='stylesheet' href='bower_components/icomoon/style.css')
@@ -22,39 +22,31 @@ html
 		#tooltip.tooltip
 		#modal-about.md-modal.md-effect-1
 			.md-content
-				h3 Credits
+				h3 MusicV
 				div(style='line-height: 23px;')
 					i.icon-headphones
-					p
-						| Party Mode is an audio visualizer experiment powered by 
-						a(target='_blank', href='http://d3js.org') d3.js
-						|  and the 
-						a(target='_blank', href='http://www.w3.org/TR/webaudio/') web audio api
-						| .  This is a work-in-progress and likely has lots of critical bugs!  It requires a modern browser (preferably Chrome) and a decent CPU.  This app was developed by 
-						a(target='_blank', href='http://preziotte.com') Mathew Preziotte
-						|  with lots of 
-						a(target='_blank', href='https://github.com/preziotte/party-mode#help--inspiration') help and inspiration
-						| .
-						br
-						br
-						|                     Try dragging an mp3 from your desktop into the browser, or press 
-						a.key(href='#', style='color: black;')
-							span K
-						|  for keyboard shortcuts.
-						br
-						br
-						|                     For a list of known issues -- to help improve this experiment -- or to download and run this app locally, visit the 
-						a(target='_blank', href='https://github.com/preziotte/party-mode') Github
-						|  page.  Questions, comments and hugs can be directed 
-						a(target='_blank', href='mailto:mat.preziotte@gmail.com') here
-						| .  Thanks for looking :)  I had a lot of fun building this.
-						br
-						br
-						div(style='text-align: right;') - Mat
+					p SRTP Project @ZJU
+
+					ul Prowerd by
+						li
+							a(target='_blank', href='http://d3js.org') d3.js
+						li
+							a(target='_blank', href='http://www.w3.org/TR/webaudio/') web audio api
+
+					ul Credit
+						li
+							a(target='_blank', href='http://pillowsky.org') PillowSky - 黄羽众
+						li
+							a(target='_blank') 胡钟元
+						li
+							a(target='_blank') 邬放龙
+
+					p This is an experiment project and isn't pretty compatible. Make sure you are using modern web broswer. 
+
 					button.md-close dismiss
 		#modal-keyboard.md-modal.md-effect-1
 			.md-content
-				// <h3>Keyboard Shortcuts</h3>
+				h3 Keyboard Shortcuts
 				div
 					i.icon-keyboard
 					ul
@@ -102,23 +94,16 @@ html
 			ul
 				li#circle.active(viz-num='0')
 					.clicker
-				li#chop(viz-num='1')
-					.clicker
 				li#icosahedron(viz-num='2')
-					.clicker
-				li#grid(viz-num='3')
-					.clicker
-				li#equal(viz-num='4')
-					.clicker
-				li#spin(viz-num='5')
 					.clicker
 				li#hexbin(viz-num='6')
 					.clicker
+				li#grid(viz-num='3')
+					.clicker
+				li#spin(viz-num='5')
+					.clicker
 				// <li id='voronoi' viz-num='7'></li>
 				li.buffer
-					| RETURN TO
-					br
-					| preziotte.com
 		.wrapper
 			.vinyl-container
 				i.icon-vinyl
@@ -137,12 +122,6 @@ html
 					i.i.icon-menu
 					i.i.icon-question
 					i.i.icon-keyboard2
-					i.i.icon-loop-on
-						span
-							| randomize visualization: 
-							b off
-					// <i class="i icon-volume-medium"></i>
-					i.i.icon-github2
 					i.i.icon-expand
 				.slider
 					span adjust sensitivity

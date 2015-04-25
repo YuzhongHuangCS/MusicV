@@ -64,13 +64,10 @@
 			return;
 		}
 		
-		if (h.getURLParameter('sc') == null)
-			a.loadSound();		
-		else
-			a.soundCloud();
+		a.loadSound();
 
+	};
 
-		};
 	a.bind = function() {
 		console.log("a.bind fired");
 		var click = (Helper.isMobile()) ? 'touchstart' : 'click';
@@ -79,7 +76,6 @@
 		$('.menu').on('mouseleave', function() { h.toggleMenu('close'); });
 		$('.menu').on(click, 'li', function() { h.vizChange(+$(this).attr('viz-num')); });
 		$('.menu').on(click, '.clicker', function() { h.vizChange(+$(this).closest('li').attr('viz-num')); });
-		$('.buffer').on(click, function() { window.location.href='http://preziotte.com' });
 		$('.song-metadata').on(click, h.songGo);
 		$('.wrapper').on(click, function() { h.toggleMenu('close'); });
 		$('.icon-pause').on(click, h.togglePlay);
@@ -92,7 +88,6 @@
 		$('.icon-question').on(click, function() { h.showModal('#modal-about'); });
 		$('.icon-keyboard2').on(click, function() { h.showModal('#modal-keyboard'); });
 		$('.icon-volume-medium').on(click, function() { audio.muted = (audio.muted == true) ? false : true; });
-		$('.icon-github2').on(click, function() { window.open('http://github.com/preziotte/party-mode','_blank'); });
 		$('.icon-loop-on').on(click, function() { 
 			$(this).find('b').text(State.loopText[(State.loop)%4]);
 			h.infiniteChange(State.loopDelay[(State.loop++)%4]); 
@@ -128,7 +123,8 @@
 		$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', h.resize);  //http://stackoverflow.com/a/9775411
 
 
-		};
+	};
+
 	a.keyboard = function() {
 		console.log("a.keyboard fired");
 
@@ -1490,7 +1486,7 @@
 				prettyTitle += ' ['+(trackNum+1)+'/'+State.playlist.length+']';
 
 			$('.song-metadata').html(prettyTitle);
-			$('.song-metadata').attr('data-go', State.playListLinks[trackNum]);
+			//$('.song-metadata').attr('data-go', State.playListLinks[trackNum]);
 		}
 
 			$('.song-metadata').addClass("show-meta");
@@ -1632,38 +1628,6 @@
 
 		return 'unknown';
 
-		};
-	h.getCookie = function(c_name) {
-		//console.log("h.getCookie fired");
-		var i,x,y,ARRcookies=document.cookie.split(";");
-		for (i=0;i<ARRcookies.length;i++) {
-		  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-		  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
-		  x=x.replace(/^\s+|\s+$/g,"");
-		  if (x==c_name) {
-		    return unescape(y);
-		  }
-		}
-		};
-	h.setCookie = function(c_name,value,exdays) {
-		//console.log("h.setCookie fired");
-		var exdate=new Date();
-		exdate.setDate(exdate.getDate() + exdays);
-		var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-		document.cookie=c_name + "=" + c_value;
-		};
-	h.prettyLog = function(data) {
-		console.log("h.prettyLog fired");
-		return false;
-		
-		var x = data || localStorage.account;
-		if (typeof x == 'object') x = JSON.stringify(x);
-		if (typeof data == "undefined") return;
-		if (typeof data == "string") {
-			console.log(data);
-			return;
-		}
-		console.log('\n'+JSON.stringify(JSON.parse(x),null, 4));
 		};
 	root.Helper = h;
 

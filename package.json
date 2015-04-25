@@ -4,7 +4,6 @@
 	"devDependencies": {
 		"grunt": "x",
 		"grunt-contrib-jade": "x",
-		"grunt-contrib-coffee": "x",
 		"grunt-contrib-watch": "x"
 	}
 }
