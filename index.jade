@@ -2,30 +2,27 @@ doctype html
 html
 	head
 		meta(charset='utf-8')
-		meta(name='viewport', content='width=device-width, height=device-height, initial-scale=1, user-scalable=no')
-		title Party Mode :: An audio visualizer experiment.
+		meta(http-equiv='X-UA-Compatible' content='IE=edge, chrome=1')
+		meta(name='renderer' content='webkit')
+		meta(name='viewport' content='width=device-width, initial-scale=1, user-scalable=no')
+		title MusicV Dance Your music
 		link(rel='icon', href='favicon.ico', type='image/x-icon')
-		link(rel='stylesheet', href='bower_components/normalize.css/normalize.css')
-		link(rel='stylesheet', href='bower_components/icomoon/dist/style.css')
-		link(rel='stylesheet', href='css/style.css')
-		// <script src="https://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js"></script>
-		// <script src="bower_components/underscore/underscore.js"></script>
-		// <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+		link(rel='stylesheet' href='bower_components/normalize.css/normalize.css')
+		link(rel='stylesheet' href='bower_components/icomoon/style.css')
+		link(rel='stylesheet' href='css/style.css')
 		script(src='bower_components/jquery/dist/jquery.min.js')
 		script(src='bower_components/d3/d3.min.js')
 		script(src='bower_components/mousetrap/mousetrap.min.js')
 		script(src='bower_components/id3js/dist/id3.min.js')
 		script(src='bower_components/d3.hexbin/hexbin.min.js')
-
 		script(src='js/main.js')
-		script(src='//connect.soundcloud.com/sdk.js')
-		// <script> $(document).ready(function() { App.init(); }); </script>
+
 	body
 		#dragover.dragover
 		#tooltip.tooltip
 		#modal-about.md-modal.md-effect-1
 			.md-content
-				// <h3>Credits</h3>
+				h3 Credits
 				div(style='line-height: 23px;')
 					i.icon-headphones
 					p
@@ -101,26 +98,6 @@ html
 								span ▶
 							|  cycles color palettes
 					button.md-close dismiss
-		#modal-soundcloud.md-modal.md-effect-1
-			.md-content
-				h3 Play Audio via SoundCloud*
-				div(style='line-height: 23px;')
-					span(style='margin-top: -35px; display: block; font-family: helvetica neue;') *Only works in Chrome at the moment
-					i#sc_icon.icon-soundcloud
-					p
-						br
-						|                         Simply paste in a link to a 
-						a(href='http://soundcloud.com') SoundCloud
-						|  artist, track, or playlist and click import:
-						br
-						input#sc_input(placeholder='ex. https://soundcloud.com/mydevices/launch')
-						button.sc_import import audio
-						br
-						br
-						|                         You can also share it with the following URL:
-						pre#sc_url(style='word-wrap: break-word; text-align: center;').
-							\nhttp://preziotte.com/partymode?sc=              
-					button.md-close dismiss
 		.menu.menu-open
 			ul
 				li#circle.active(viz-num='0')
@@ -154,7 +131,6 @@ html
 				i.i.icon-backward2
 				i.i.icon-pause
 				i.i.icon-forward2
-				i.i.icon-soundcloud.schover(data-hovertext='Play music from a SoundCloud URL.')
 				i.i.icon-microphone(data-hovertext='Connect to the microphone on your computer.')
 			.menu-wide
 				.options

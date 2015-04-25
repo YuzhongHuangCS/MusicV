@@ -15,10 +15,6 @@
 		var s = {
 			version: '1.6.0',
 			debug: (window.location.href.indexOf("debug") > -1) ? true : false,
-			// preziotte.com/partymode playlist
-			//playlist: ['forgot.mp3', 'chaos.mp3', 'stop.mp3', 'bless.mp3', 'benares.mp3', 'radio.mp3', 'selftanner.mp3', 'startshootin.mp3', 'track1.mp3', 'holdin.m4a', 'waiting.mp3', 'dawn.mp3', 'analog.mp3', 'settle.mp3', 'crackers.mp3', 'nuclear.mp3', 'madness.mp3', 'magoo.mp3', 'around.mp3', 'where.mp3', 'bird.mp3', 'notes.mp3'],
-			//playListLinks: ['https://soundcloud.com/mononome', 'https://soundcloud.com/sixfingerz/sixfingerz-out-of-chaos-sttb', 'http://odesza.com/', 'https://soundcloud.com/keithkenniff', 'http://www.holbaumann.com/', 'http://www.holbaumann.com/', 'http://www.blackmothsuperrainbow.com/', 'http://www.littlepeoplemusic.com/', 'https://en.wikipedia.org/wiki/The_1UP_Show', 'https://soundcloud.com/hermitude/holdin-on-hermitude-remix', 'https://soundcloud.com/ceiling_fan', 'http://www.iamsirch.com/', 'http://prettylightsmusic.com/', 'https://soundcloud.com/saycet'],
-			// example playlist
 			playlist: ['dawn.mp3', 'forgot.mp3'],
 			playListLinks: ['http://www.iamsirch.com/', 'https://soundcloud.com/mononome'],
 			width : $(document).width(),
@@ -91,7 +87,6 @@
 		$('.icon-forward2').on(click, function() { h.changeSong('n'); });
 		$('.icon-backward2').on(click, function() { h.changeSong('p'); });
 		$('.icon-expand').on(click, h.toggleFullScreen);
-		$('.icon-soundcloud').on(click, function() { h.showModal('#modal-soundcloud'); });
 		$('.icon-microphone').on(click, a.microphone);
 		$('.sc_import').on(click, a.soundCloud);
 		$('.icon-question').on(click, function() { h.showModal('#modal-about'); });
@@ -144,7 +139,6 @@
 		Mousetrap.bind('c', function() { h.changeSong(); });
 		Mousetrap.bind('l', function() { $('.icon-loop-on').trigger('click'); });
 		Mousetrap.bind('k', function() { $('.icon-keyboard2').trigger('click'); });
-		Mousetrap.bind('s', function() { h.showModal('#modal-soundcloud'); });
 		Mousetrap.bind('v', function() { h.changeSong('n'); });
 		Mousetrap.bind('x', function() { h.changeSong('p'); });
 
@@ -214,122 +208,6 @@
 
 		};
 
-	a.soundCloud = function() {
-		console.log('a.soundCloud fired');		
-
-		// if mozilla or safar, just loadsound instead
-		if (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0) {
-			a.loadSound();	
-			return;	
-		}
-		if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-			a.loadSound();	
-			return;	
-		}
-
-		State.soundCloudURL = $('#sc_input').val() || h.getURLParameter('sc');
-		$('#sc_input').val(State.soundCloudURL);
-		$('#sc_url span').html(State.soundCloudURL);
-
-		if (State.soundCloudURL == null) return;
-
-		State.currentSong = 0
-
-		// use /resolve to get tracks/playlists/whatever from url
-		$.get(
-		  'http://api.soundcloud.com/resolve.json?url=' + State.soundCloudURL + '&client_id=67129366c767d009ecc75cec10fa3d0f', 
-		  function (result) {
-		  	State.soundCloudData = result;
-		    console.log(result);
-		    console.log(result.kind);
-
-	    	if (result.kind == "user") {
-			    console.log(result.id);
-
-				// https://stackoverflow.com/questions/10159802/getting-specific-users-track-list-with-soundcloud-api
-				// get all tracks from user via /users/{user_id}/tracks
-				SC.initialize({
-					client_id: '67129366c767d009ecc75cec10fa3d0f'
-				});
-
-				SC.get("/users/"+result.id+"/tracks", function(sound) {
-					State.soundCloudTracks = sound.length;
-					State.soundCloudData = sound;
-					sound = sound[0];
-					console.log(sound);
-					console.log(sound.title)
-					console.log(sound.user.permalink)
-	    			//sound.uri = sound.uri.replace(/.*?:\/\//g, "http://www.corsproxy.com/");
-
-					h.renderSongTitle(sound);
-					a.loadSoundHTML5(sound.uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');
-
-		});
-
-	    	}
-
-	    	if (result.kind == "track") {
-				State.soundCloudTracks = 1;
-				State.soundCloudData = result;
-	    		console.log(result.uri);
-	    		console.log(result.title);
-	    		console.log(result.user.username);
-
-	    		// http://www.corsproxy.com/
-	    		//result.uri = result.uri.replace(/.*?:\/\//g, "http://www.corsproxy.com/");
-				a.loadSoundHTML5(result.uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');
-				h.renderSongTitle(result);
-
-	    	}
-
-	    	if (result.kind == "playlist") {
-				State.soundCloudTracks = result.tracks.length;
-				State.soundCloudData = result.tracks;
-	    		console.log(result.tracks.length);
-	    		console.log(result.title);
-	    		console.log(result.user.username);
-				h.renderSongTitle(result.tracks[0]);
-				a.loadSoundHTML5(result.tracks[0].uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');
-
-	    	}
-		  }
-		);
-		return;
-
-		// to get tracks /users/{user_id}/tracks
-
-		SC.initialize({
-			client_id: '67129366c767d009ecc75cec10fa3d0f'
-		});
-
-		SC.get("/tracks/115225139", function(sound) {
-			console.log(sound);
-			console.log(sound.title)
-			$('.song-metadata').html(sound.title);
-			$('.song-metadata').addClass("show-meta");
-
-			State.metaLock = true;
-
-		// in 3 seconds, remove class unless lock
-		metaHide = setTimeout(function() { 
-			State.metaLock = false;
-			$('.song-metadata').removeClass("show-meta");
-
-		}, 3000); 	
-		a.loadSoundHTML5(sound.uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');
-
-		});
-				//	 SC.get("/tracks/75868018", {}, function(sound){
-				//	 	console.log(sound);
-				//	     console.log("Sound URI: "+sound.uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');			// append to sound.uri --> /stream?client_id=YOUR_ID
-					     //$("#audio-test").attr("src", sound.uri);
-				//		     a.loadSoundHTML5(sound.uri+'/stream?client_id=67129366c767d009ecc75cec10fa3d0f');
-				//		 });
-
-					 //  SC.stream("/tracks/75868018", function(sound){
-					 //     $("audio-test").attr("src", sound.uri);
-					 // });
-		};
 	a.microphone = function() {
 		console.log('a.microphone fired');
 
@@ -1473,36 +1351,6 @@
 
     	var objectUrl = URL.createObjectURL(file);
     	a.loadSoundHTML5(objectUrl);
-
-			   //  	var files = e.originalEvent.dataTransfer.files;
-
-			   //  	if (files[0].type.match(/audio.*/)) {
-			   //  		console.log('true');
-				
-						// var read = new FileReader(); 
-						// read.readAsDataURL(files[0]);
-						// read.onload = function(e) { 
-						// 	console.log(' -- FileReader onload fired');
-							
-						// 	// fuuzikplay[3] = soundManager.createSound({ 
-						// 	// id: "audio", 
-						// 	// url: d.target.result 
-						// 	// }); 
-						// 	//audio.pause(); 
-				   			
-				  //  			audio = new Audio();
-						// 	audio.src = e.target.result; 
-						//     audio.controls = true;
-						//     audio.loop = true;
-						//     audio.autoplay = true;
-
-						//     $('#audio_box').empty();
-						// 	document.getElementById('audio_box').appendChild(audio);
-					 //        a.audioBullshit();
-
-						// };
-			   //  	}
-		
 		};
 	h.readID3 = function(file) {
 		console.log('h.readID3 fired');
