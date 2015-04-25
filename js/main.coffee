@@ -1,3 +1,5 @@
+'use strict'
+
 (->
 	self = this
 	# use global context rather than window object
@@ -115,7 +117,7 @@
 			h.showModal '#modal-keyboard'
 
 		$('.icon-volume-medium').on click, ->
-			audio.muted = if `audio.muted == true` then false else true
+			audio.muted = if audio.muted == true then false else true
 
 		$('.icon-loop-on').on click, ->
 			$(this).find('b').text state.loopText[state.loop % 4]
@@ -241,7 +243,7 @@
 
 	a.loadSoundHTML5 = (f) ->
 		console.log 'a.loadSoundHTML5 fired'
-		`audio = new Audio()`
+		self.audio = new Audio()
 		#audio.remove();
 		audio.src = f
 		#audio.controls = true;
@@ -310,7 +312,7 @@
 		$('video, audio').each ->
 			#h.loadSoundHTML5(this.src);
 			# if .src?  if playing?
-			`audio = this`
+			self.audio = this
 			a.audioBullshit()
 			return
 		#$('object')
@@ -324,8 +326,8 @@
 		# recursive function used to update audio waveform data and redraw visualization
 		window.requestAnimationFrame = window.requestAnimationFrame or window.mozRequestAnimationFrame or window.webkitRequestAnimationFrame or window.msRequestAnimationFrame
 		window.requestAnimationFrame a.frameLooper
-		`now = Date.now()`
-		`delta = now - state.then`
+		now = Date.now()
+		delta = now - state.then
 		if audio
 			$('#progressBar').attr 'style', 'width: ' + audio.currentTime / audio.duration * 100 + '%'
 		# some framerate limiting logic -- http://codetheory.in/controlling-the-frame-rate-with-requestanimationframe/
@@ -405,11 +407,11 @@
 		l = numbers.length
 		i = 0
 		while i < l
-			if `numbers[i] == 0`
+			if numbers[i] == 0
 				numbers2[i] = 0 + offset
 			else
 				numbers2[i] = numbers[i] / ratio * coef + offset
-			if `i % 2 == 0` and neg
+			if i % 2 == 0 and neg
 				numbers2[i] = -Math.abs(numbers2[i])
 			i++
 		numbers2
@@ -420,7 +422,7 @@
 		i = 0
 		while i < waveform_array.length
 			temp += waveform_array[i]
-			if `i % binsize == 0`
+			if i % binsize == 0
 				numbers.push temp / binsize
 				temp = 0
 			i++
@@ -430,11 +432,11 @@
 		ratio = Math.max.apply(Math, numbers)
 		l = numbers.length
 		while i < l
-			if `numbers[i] == 0`
+			if numbers[i] == 0
 				numbers2[i] = 0 + offset
 			else
 				numbers2[i] = numbers[i] / ratio * coef + offset
-			if `i % 2 == 0` and neg
+			if i % 2 == 0 and neg
 				numbers2[i] = -Math.abs(numbers2[i])
 			i++
 		numbers2
@@ -448,7 +450,7 @@
 		copy = []
 		i = 0
 		while i < 500
-			if `i % binsize == 0`
+			if i % binsize == 0
 				copy.push waveform_array[i]
 			i++
 		copy
@@ -459,7 +461,7 @@
 		temp = 0
 		while i < waveform_array.length
 			temp += waveform_array[i]
-			if `i % binsize == 0`
+			if i % binsize == 0
 				copy.push temp / binsize
 				temp = 0
 			i++
@@ -471,7 +473,7 @@
 	r = {}
 
 	r.circle = ->
-		if `state.active != 'circle'`
+		if state.active != 'circle'
 			state.active = 'circle'
 			$('body > svg').empty()
 		WAVE_DATA = c.bins_select(70)
@@ -535,7 +537,7 @@
 	r.icosahedron = ->
 		# http://bl.ocks.org/mbostock/7782500
 		if state.active == 'icosahedron'
-			time = Date.now() - t0
+			time = Date.now() - self.t0
 			xx = c.total() / 100
 			style = ''
 			i = 0
@@ -545,48 +547,43 @@
 			$('body > svg path').attr 'style', style
 			#$('body > svg path').attr("style", "transform: skew("+xx+"deg,"+xx+"deg)");
 			# 1
-			projection.rotate [
-				time * velocity[0]
-				time * velocity[1]
+			self.projection.rotate [
+				time * self.velocity[0]
+				time * self.velocity[1]
 			]
-			face.each((d) ->
+			self.face.each((d) ->
 				d.forEach (p, i) ->
-					d.polygon[i] = projection(p)
-					return
-				return
+					d.polygon[i] = self.projection(p)
 			).style('display', (d) ->
 				if d.polygon.area() > 0 then null else 'none'
 			).attr 'd', (d) ->
 				'M' + d.polygon.join('L') + 'Z'
 			# 2
-			projection2.rotate [
-				time * velocity2[0]
-				time * velocity2[1]
+			self.projection2.rotate [
+				time * self.velocity2[0]
+				time * self.velocity2[1]
 			]
-			face2.each((d) ->
+			self.face2.each((d) ->
 				d.forEach (p, i) ->
-					d.polygon[i] = projection2(p)
-					return
-				return
+					d.polygon[i] = self.projection2(p)
 			).style('display', (d) ->
 				if d.polygon.area() > 0 then null else 'none'
 			).attr 'd', (d) ->
 				'M' + d.polygon.join('L') + 'Z'
 			# 3
-			projection3.rotate [
-				time * velocity3[0]
-				time * velocity3[1]
+			self.projection3.rotate [
+				time * self.velocity3[0]
+				time * self.velocity3[1]
 			]
-			face3.each((d) ->
+			self.face3.each((d) ->
 				d.forEach (p, i) ->
-					d.polygon[i] = projection3(p)
-					return
-				return
+					d.polygon[i] = self.projection3(p)
 			).style('display', (d) ->
 				if d.polygon.area() > 0 then null else 'none'
 			).attr 'd', (d) ->
 				'M' + d.polygon.join('L') + 'Z'
 			return
+
 		state.active = 'icosahedron'
 		$('body > svg').empty()
 		width = state.width
@@ -594,7 +591,7 @@
 		self.velocity = [0.10, 0.005]
 		self.velocity2 = [-0.10, -0.05]
 		self.velocity3 = [0.10, 0.1]
-		t0 = Date.now()
+		self.t0 = Date.now()
 		
 		# 1
 		self.projection = d3.geo.orthographic().scale(height / 2).translate([
@@ -607,8 +604,7 @@
 		
 		svg = d3.select('body').append('svg').attr('class', 'isoco1').attr('width', width).attr('height', height)
 		self.face = svg.selectAll('path').data(h.icosahedronFaces).enter().append('path').attr('class', 'isoco').each((d) ->
-			d.polygon = d3.geom.polygon(d.map(projection))
-			return
+			d.polygon = d3.geom.polygon(d.map(self.projection))
 		)
 		# 2
 		self.projection2 = d3.geo.orthographic().scale(height / 4).translate([
@@ -621,8 +617,7 @@
 		
 		svg2 = d3.select('body').append('svg').attr('class', 'isoco2').attr('width', width).attr('height', height)
 		self.face2 = svg2.selectAll('path').data(h.icosahedronFaces).enter().append('path').attr('class', 'isoco').each((d) ->
-			d.polygon = d3.geom.polygon(d.map(projection2))
-			return
+			d.polygon = d3.geom.polygon(d.map(self.projection2))
 		)
 		# 3
 		self.projection3 = d3.geo.orthographic().scale(height / 1).translate([
@@ -635,7 +630,7 @@
 		
 		svg3 = d3.select('body').append('svg').attr('class', 'isoco3').attr('width', width).attr('height', height)
 		self.face3 = svg3.selectAll('path').data(h.icosahedronFaces).enter().append('path').attr('class', 'isoco').each((d) ->
-			d.polygon = d3.geom.polygon(d.map(projection3))
+			d.polygon = d3.geom.polygon(d.map(self.projection3))
 		)
 
 	r.icosahedron_thumb = ->
@@ -680,35 +675,6 @@
 			d.polygon = d3.geom.polygon(d.map(projection_thumb))
 		)
 
-	r.grid2 = (data) ->
-		# http://bl.ocks.org/mbostock/5731578
-		if state.active == 'grid'
-			dt = Date.now() - time
-			projection.rotate [
-				rotate[0] + velocity[0] * dt
-				rotate[1] + velocity[1] * dt
-			]
-			feature.attr 'd', path
-		$('body > svg').empty()
-		state.active = 'grid'
-		self.rotate = [10, -10]
-		self.velocity = [0.03, -0.01]
-		self.time = Date.now()
-		self.projection = d3.geo.orthographic().scale(240).translate([
-			state.width / 2
-			state.height / 2
-		]).clipAngle(90 + 1e-6).precision(.3)
-		self.path = d3.geo.path().projection(projection)
-		graticule = d3.geo.graticule().minorExtent([[-180, -89], [180, 89 + 1e-4]]);
-
-		svg.append('path').datum(type: 'Sphere').attr('class', 'sphere').attr 'd', path
-		svg.append('path').datum(graticule).attr('class', 'graticule').attr 'd', path
-		# svg.append("path")
-		#     .datum({type: "LineString", coordinates: [[-180, 0], [-90, 0], [0, 0], [90, 0], [180, 0]]})
-		#     .attr("class", "equator")
-		#     .attr("d", path);
-		self.feature = svg.selectAll('path')
-
 	r.grid = (data) ->
 		if state.active == 'grid'
 			xx = c.total() / 100 + 1
@@ -720,46 +686,53 @@
 				style += state.vendors[i] + 'transform: scale(' + xx + ',' + xx + '); '
 				i++
 			$('body > svg path').attr 'style', style
-			projection.rotate [λ(p), φ(p)]
-			#projection.rotate([λ(p), 0]);
-			svg.selectAll('path').attr 'd', path
-			p = p + 5
+			
+			self.projection.rotate([self.λ(self.p), self.φ(self.p)])
+			svg.selectAll('path').attr 'd', self.path
+			self.p += 5
 			#((c.total()/100)*10);
-			step = Math.floor(c.total() / 100 * 60)
-			step = step < 5 ? 5 : step
-			graticule = d3.geo.graticule().minorStep([step, step]).minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+			self.step = Math.floor(c.total() / 100 * 60)
+			self.step = if self.step < 5 then 5 else self.step
 
-			grat.datum(graticule).attr('class', 'graticule').attr 'd', path
-		
-		p = 0
+			self.graticule = d3.geo.graticule()
+				.minorStep([self.step, self.step])
+				.minorExtent([[-180, -90], [180, 90 + 1e-4]])
+
+			self.grat.datum(self.graticule)
+				.attr('class', 'graticule')
+				.attr('d', self.path)
+			return
+
+		self.p = 0
 		state.active = 'grid'
 		$('body > svg').empty()
-		projection = d3.geo.gnomonic()
+		self.projection = d3.geo.gnomonic()
 			.clipAngle(80)
 			.scale(500)
-		path = d3.geo.path().projection(projection)
-		graticule = d3.geo.graticule().minorStep([5, 5]).minorExtent([[-180, -90], [180, 90 + 1e-4]]);
+		self.path = d3.geo.path().projection(self.projection)
+		self.graticule = d3.geo.graticule()
+			.minorStep([5, 5])
+			.minorExtent([[-180, -90], [180, 90 + 1e-4]])
 
 		# lamda / longitude
-		λ = d3.scale.linear().domain([0, State.width]).range([-180, 180])
+		self.λ = d3.scale.linear().domain([0, state.width]).range([-180, 180])
 
 		# phi / latitude
-		φ = d3.scale.linear()
-			.domain([0, State.height])
+		self.φ = d3.scale.linear()
+			.domain([0, state.height])
 			.range([90, -90]);
 		 
-		grat = svg.append("path")
-			.datum(graticule)
+		self.grat = svg.append("path")
+			.datum(self.graticule)
 			.attr("class", "graticule")
-			.attr("d", path);
-
+			.attr("d", self.path);
 
 	r.grid_thumb = (data) ->
 		width = $('#grid').width()
 		height = $('#grid').height()
 		if state.thumbs_init[3] == 'init'
 			xx = c.total() / 100 + 1
-			xx = if `xx == 1` then 0 else xx
+			xx = if xx == 1 then 0 else xx
 			#	xx = (xx>1.4) ? 1.4 : xx;
 			style = ''
 			i = 0
@@ -876,11 +849,11 @@
 		$('body > svg').empty()
 		if state.active != 'hexbin'
 			randomX = d3.random.normal(state.width / 2, 700)
-			ps = d3.range(1024).map ->
+			self.ps = d3.range(1024).map ->
 				return randomX()
 
 		state.active = 'hexbin'
-		points = d3.zip(ps, c.normalize(state.height, 0))
+		points = d3.zip(self.ps, c.normalize(state.height, 0))
 		#randomY = d3.random.normal(height / 2, 300),
 		#points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
 		color = d3.scale.linear()
@@ -889,7 +862,7 @@
 			.interpolate(d3.interpolateLab);
 
 		hexbin = d3.hexbin()
-			.size([State.width, State.height])
+			.size([state.width, state.height])
 			.radius(50);
 
 		radius = d3.scale.linear()
@@ -995,9 +968,9 @@
 
 	h.toggleMenu = (x) ->
 		console.log 'h.toggleMenu'
-		if `x == 'toggle'`
+		if x == 'toggle'
 			x = if $('.menu').hasClass('menu-open') then 'close' else 'open'
-		if `x == 'open'`
+		if x == 'open'
 			$('.menu').addClass 'menu-open'
 			$('.icon-menu').addClass 'fadeOut'
 			#$("body > svg").attr("class", "svg-open");
@@ -1042,7 +1015,7 @@
 		$('.menu-controls').addClass 'fadeOut'
 		$('#progressBar').addClass 'fadeOut'
 		$('html').addClass 'noCursor'
-		if `state.metaLock == false`
+		if state.metaLock == false
 			$('.song-metadata').removeClass 'show-meta'
 		state.hud = 0
 
@@ -1126,7 +1099,7 @@
 		return
 
 	h.togglePlay = ->
-		if audio and `audio.paused == false` then audio.pause() else audio.play()
+		if audio and audio.paused == false then audio.pause() else audio.play()
 		$('.icon-pause').toggleClass 'icon-play'
 		return
 
@@ -1262,7 +1235,7 @@
 		return /iPhone|iPod|iPad|Android|BlackBerry/.test navigator.userAgent
 
 	self.Helper = h
-	return
+
 ).call(this)
 
 $(document).ready(App.init)
