@@ -20,8 +20,8 @@
 		# globals & state
 		self.state = 
 			playlist: ['forgot.mp3', 'Animal.wav', 'forgot.mp3', 'Go.mp3', 'Johann_Strauss.mp3', 'Let_Me_Hit_It.mp3', 'Sunrise.mp3', 'The_Mass.mp3']
-			width: $(document).width() * 3
-			height: $(document).height() * 3
+			width: $(document).width() * 2
+			height: $(document).height() * 2
 			sliderVal: 50
 			canKick: true
 			metaLock: false
@@ -71,15 +71,15 @@
 		ySpeed = 0
 		rSpeed = 0
 
-		lastX = 2100
-		lastY = 1800
+		lastX = 1400
+		lastY = 600
 
 		camMotion.on 'frame', ->
 			point = camMotion.getMovementPoint(true)
 			if camMotion.getAverageMovement(point.x - point.r / 2, point.y - point.r / 2, point.r, point.r) > 4
 				#	log point
-				xSpeed += (point.x - lastX) * 2
-				ySpeed += (point.y - lastY) * 2
+				xSpeed += (point.x - lastX)
+				ySpeed += (point.y - lastY)
 				#rSpeed *= point.r / 200
 
 				xPos += xSpeed
@@ -1069,8 +1069,8 @@
 
 	h.resize = ->
 		console.log 'h.resize fired'
-		state.width = $(window).width() * 3
-		state.height = $(window).height() * 3
+		state.width = $(window).width() * 2
+		state.height = $(window).height() * 2
 		state.active = state.trigger
 		$('body > svg').attr('width', state.width).attr 'height', state.height
 		full = document.fullscreen or document.webkitIsFullScreen or document.mozFullScreen
