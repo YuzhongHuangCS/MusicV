@@ -20,8 +20,8 @@
 		# globals & state
 		self.state = 
 			playlist: ['forgot.mp3', 'Animal.wav', 'forgot.mp3', 'Go.mp3', 'Johann_Strauss.mp3', 'Let_Me_Hit_It.mp3', 'Sunrise.mp3', 'The_Mass.mp3']
-			width: $(document).width() * 2
-			height: $(document).height() * 2
+			width: $(document).width()
+			height: $(document).height()
 			sliderVal: 50
 			canKick: true
 			metaLock: false
@@ -63,40 +63,6 @@
 			console.log 'error', e
 		camMotion.on 'streamInit', (e) ->
 			console.log 'webcam stream initialized', e
-
-		xPos = 0
-		yPos = 0
-		rPos = 1
-		xSpeed = 0
-		ySpeed = 0
-		rSpeed = 0
-
-		lastX = 1400
-		lastY = 600
-
-		camMotion.on 'frame', ->
-			point = camMotion.getMovementPoint(true)
-			if camMotion.getAverageMovement(point.x - point.r / 2, point.y - point.r / 2, point.r, point.r) > 4
-				#	log point
-				xSpeed += (point.x - lastX)
-				ySpeed += (point.y - lastY)
-				#rSpeed *= point.r / 200
-
-				xPos += xSpeed
-				yPos += ySpeed
-				#rPos *= rSpeed
-
-				$('svg#viz').css('top', yPos)
-				$('svg#viz').css('left', xPos)
-				#$('svg#viz').css('transform', 'scale(' + rPos + ')')
-
-			xSpeed *= 0.5
-			ySpeed *= 0.5
-			lastX = point.x
-			lastY = point.y
-			#rSpeed *= 0.8
-
-		camMotion.start()
 
 	a.bind = ->
 		console.log 'a.bind fired'
@@ -1069,8 +1035,8 @@
 
 	h.resize = ->
 		console.log 'h.resize fired'
-		state.width = $(window).width() * 2
-		state.height = $(window).height() * 2
+		state.width = $(window).width()
+		state.height = $(window).height()
 		state.active = state.trigger
 		$('body > svg').attr('width', state.width).attr 'height', state.height
 		full = document.fullscreen or document.webkitIsFullScreen or document.mozFullScreen
