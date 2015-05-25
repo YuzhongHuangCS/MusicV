@@ -58,11 +58,6 @@
 		ctx.lineWidth = 5
 		console.log 'Inintializing'
 		'''
-		camMotion = CamMotion.Engine()
-		camMotion.on 'error', (e) ->
-			console.log 'error', e
-		camMotion.on 'streamInit', (e) ->
-			console.log 'webcam stream initialized', e
 
 	a.bind = ->
 		console.log 'a.bind fired'
