@@ -22,4 +22,4 @@ module.exports = (grunt)->
 	grunt.loadNpmTasks('grunt-contrib-watch')
 
 	grunt.registerTask('default', ['jade', 'coffee'])
-	grunt.registerTask('develop', ['watch'])
+	grunt.registerTask('develop', ['default', 'watch'])
