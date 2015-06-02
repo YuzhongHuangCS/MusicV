@@ -8,11 +8,17 @@ class Player
 		@analyser = @context.createAnalyser()
 		@analyser.connect(@context.destination)
 		@source = null
+		@playlist = ['mp3/forgot.mp3', 'mp3/Go.mp3', 'mp3/Johann_Strauss.mp3', 'mp3/Let_Me_Hit_It.mp3', 'mp3/Sunrise.mp3', 'mp3/The_Mass.mp3']
+		@index = 0
 
 	play: (path) =>
 		@audio.src = path
 		@source = @context.createMediaElementSource(@audio)
 		@source.connect(@analyser)
+
+	playIndex: (index)=>
+		@index = index
+		@play(@playlist[index])
 
 	freq: (fftSize) =>
 		@analyser.fftSize = fftSize or 2048
@@ -52,16 +58,29 @@ class Render
 		@height = $(document).height()
 		@player = player
 		@compute = compute
-		@mode = 0
-		@last = 0
+		@mode = 1
+		@last = 1
 		@visual = [@circle, @icosahedron, @hexbin, @grid, @spin]
 
 		@svg = d3.select('svg#viz')
 		@cache = {}
 
+		@cacheIcosahedron()
 		@cacheHexbin()
 		@cacheGrid()
 		@cacheSpin()
+
+	draw: =>
+		if @last == 1 and @mode != 1
+			$('body > svg').empty()
+		else
+			$('svg#viz').empty()
+
+		if @mode == 1 and @last != 1
+			@cacheIcosahedron()
+
+		@last = @mode
+		@visual[@mode]()
 
 	cacheIcosahedron: =>
 		@cache.icosahedron = {}
@@ -155,6 +174,7 @@ class Render
 
 	circle: =>
 		freqArray = @player.freq(32)
+
 
 		bars = @svg.selectAll('circle').data(freqArray)
 		bars.enter().append('circle')
@@ -293,31 +313,76 @@ class Render
 			.attr 'stroke-dasharray', waveData / 6 + 'px'
 			.attr 'opacity', waveData / 2200
 
-	draw: =>
-		if @last == 1 and @mode != 1
-			$('body > svg').empty()
-		else
-			$('svg#viz').empty()
-
-		if @mode == 1 and @last != 1
-			@cacheIcosahedron()
-
-		@last = @mode
-		@visual[@mode]()
-
-
 class Helper
-	constructor: (render)->
+	constructor: (render, player)->
 		@render = render
+		@player = player
 
-	visual: (n) ->
+	bindMouse: =>
+		self = this
+		$('.icon-expand').on('click', @toggleFullScreen)
+			
+		$('.menu, .icon-menu').on 'mouseenter touchstart', =>
+			@toggleMenu('open')
+
+		$('.menu').on 'mouseleave', =>
+			@toggleMenu('close')
+
+		$('.wrapper').on 'click', =>
+			@toggleMenu('close')
+
+		$('.menu li').on 'click', ->
+			self.visual(Number($(this).attr('viz-num')))
+
+		$('.icon-question').on 'click', =>
+			@showModal('#modal-about')
+
+		$('.icon-keyboard2').on 'click', =>
+			@showModal('#modal-keyboard')
+
+		$('.md-close').on('click', @hideModals)
+
+		$('#slider').on 'input change', (event)=>
+			@player.analyser.smoothingTimeConstant = 1 - event.target.value / 100
+
+		$('.icon-pause').on('click', @togglePlay)
+		$('.icon-play').on('click', @togglePlay)
+
+		$('.icon-forward2').on 'click', =>
+			@changeSong(1)
+
+		$('.icon-backward2').on 'click', =>
+			@changeSong(-1)
+
+		$('.dotstyle li').on 'click', ->
+			self.themeChange(Number($(this).find('a').text()))
+
+		dragenter = (e)->
+			e.stopPropagation();
+			e.preventDefault();
+
+
+		dragover = (e)->
+			e.stopPropagation()
+			e.preventDefault()
+
+		drop = (e)->
+			e.stopPropagation()
+			e.preventDefault()
+			self.handleDrop(e.dataTransfer.files)
+
+		document.addEventListener("dragenter", dragenter, false);
+		document.addEventListener("dragover", dragover, false);
+		document.addEventListener("drop", drop, false);
+
+	visual: (n)=>
 		if n < 0 then n = 6
 		if n > 6 then n = 0
 		@render.mode = n
 		$('.menu li.active').removeClass 'active'
 		$('.menu li[viz-num="' + n + '"]').addClass 'active'
 
-	toggleMenu: (action)->
+	toggleMenu: (action)=>
 		if action == 'toggle'
 			action = if $('.menu').hasClass('menu-open') then 'close' else 'open'
 		if action == 'open'
@@ -325,7 +390,7 @@ class Helper
 		else
 			$('.menu').removeClass 'menu-open'
 
-	toggleFullScreen: ->
+	toggleFullScreen: =>
 		if !document.fullscreenElement and !document.mozFullScreenElement and !document.webkitFullscreenElement and !document.msFullscreenElement
 			# current working methods
 			$('.icon-expand').addClass 'icon-contract'
@@ -348,29 +413,59 @@ class Helper
 			else if document.webkitExitFullscreen
 				document.webkitExitFullscreen()
 
-bindMouse = (helper)->
-	$('.icon-expand').on('click', helper.toggleFullScreen)
-	
-	$('.menu, .icon-menu').on 'mouseenter touchstart', ->
-		helper.toggleMenu('open')
+	showModal: (id) =>
+		if $(id).hasClass('md-show')
+			@hideModals()
+		if $('.md-show').length > 0
+			@hideModals()
+		$(id).addClass('md-show')
 
-	$('.menu').on 'mouseleave', ->
-		helper.toggleMenu('close')
+	hideModals: =>
+		$('.md-modal').removeClass('md-show')
 
-	$('.wrapper').on 'click', ->
-		helper.toggleMenu('close')
+	togglePlay: =>
+		audio = @player.audio
+		if audio.paused then audio.play() else audio.pause()
+		$('.icon-pause').toggleClass('icon-play')
 
-	$('.menu li').on 'click', ->
-		helper.visual(Number($(this).attr('viz-num')))
+	changeSong: (diff) =>
+		current = @player.index + diff
+		max = @player.playlist.length - 1
+		if current > max then current = 0
+		if current < 0 then current = max
+		@player.playIndex(current)
+		$('.icon-pause').removeClass 'icon-play'
+
+	themeChange: (n)=>
+		if n < 0 then n = 5
+		if n > 5 then n = 0
+
+		name = 'theme_' + n
+		$('html').attr 'class', name
+		$('.dotstyle li.current').removeClass 'current'
+		$('.dotstyle li:eq(' + n + ')').addClass 'current'
+
+	stop: (event)->
+		event.stopPropagation()
+		event.preventDefault()
+
+	handleDrop: (files)=>
+		if files.length > 0
+			urls = []
+			for file in files
+				urls.push(window.URL.createObjectURL(file))
+			@player.playlist = urls
+			@player.playIndex(0)
 
 $ ->
 	player = new Player()
-	player.play('mp3/forgot.mp3')
+	player.playIndex(0)
 
 	compute = new Compute(player)
 	render = new Render(player, compute)
 
 	setInterval(render.draw, 40)
 
-	helper = new Helper(render)
-	bindMouse(helper)
+	helper = new Helper(render, player)
+	helper.bindMouse()
+	helper.themeChange(5)
