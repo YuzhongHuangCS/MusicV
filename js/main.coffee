@@ -295,6 +295,51 @@ class Render
 		$('svg#viz').empty()
 		@spin()
 
+class Helper
+	toggleMenu: (action) ->
+		if action == 'toggle'
+			action = if $('.menu').hasClass('menu-open') then 'close' else 'open'
+		if action == 'open'
+			$('.menu').addClass 'menu-open'
+		else
+			$('.menu').removeClass 'menu-open'
+		return
+
+	toggleFullScreen: ->
+		if !document.fullscreenElement and !document.mozFullScreenElement and !document.webkitFullscreenElement and !document.msFullscreenElement
+			# current working methods
+			$('.icon-expand').addClass 'icon-contract'
+			if document.documentElement.requestFullscreen
+				document.documentElement.requestFullscreen()
+			else if document.documentElement.msRequestFullscreen
+				document.documentElement.msRequestFullscreen()
+			else if document.documentElement.mozRequestFullScreen
+				document.documentElement.mozRequestFullScreen()
+			else if document.documentElement.webkitRequestFullscreen
+				document.documentElement.webkitRequestFullscreen Element.ALLOW_KEYBOARD_INPUT
+		else
+			$('.icon-expand').removeClass 'icon-contract'
+			if document.exitFullscreen
+				document.exitFullscreen()
+			else if document.msExitFullscreen
+				document.msExitFullscreen()
+			else if document.mozCancelFullScreen
+				document.mozCancelFullScreen()
+			else if document.webkitExitFullscreen
+				document.webkitExitFullscreen()
+
+bindMouse = (helper)->
+	$('.icon-expand').on('click', helper.toggleFullScreen)
+	
+	$('.menu, .icon-menu').on 'mouseenter touchstart', ->
+		helper.toggleMenu('open')
+
+	$('.menu').on 'mouseleave', ->
+		helper.toggleMenu('close')
+
+	$('.wrapper').on 'click', ->
+		helper.toggleMenu('close')
+
 $ ->
 	player = new Player()
 	player.play('mp3/forgot.mp3')
@@ -303,3 +348,6 @@ $ ->
 	render = new Render(player, compute)
 
 	setInterval(render.draw, 40)
+
+	helper = new Helper()
+	bindMouse(helper)

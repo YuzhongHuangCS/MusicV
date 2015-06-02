@@ -32,7 +32,7 @@ html
 						li
 							a(target='_blank', href='http://d3js.org') d3.js
 						li
-							a(target='_blank', href='http://www.w3.org/TR/webaudio/') web audio api
+							a(target='_blank', href='http://www.w3.org/TR/webaudio/') Web Audio API
 
 					ul Credit
 						li
@@ -94,17 +94,16 @@ html
 		.menu.menu-open
 			ul
 				li#circle.active(viz-num='0')
-					.clicker
+					img(src='img/circle.png')
 				li#icosahedron(viz-num='2')
-					.clicker
+					img(src='img/icosahedron.png')
 				li#hexbin(viz-num='6')
-					.clicker
+					img(src='img/hexbin.png')
 				li#grid(viz-num='3')
-					.clicker
+					img(src='img/grid.png')
 				li#spin(viz-num='5')
-					.clicker
-				// <li id='voronoi' viz-num='7'></li>
-				li.buffer
+					img(src='img/spin.png')
+
 		.wrapper
 			.vinyl-container
 				i.icon-vinyl
@@ -113,11 +112,7 @@ html
 				i#fullscreen.icon-resize-full-alt
 			#progressBar.progressBar
 			.song-metadata
-			.menu-controls
-				i.i.icon-backward2
-				i.i.icon-pause
-				i.i.icon-forward2
-				i.i.icon-microphone(data-hovertext='Connect to the microphone on your computer.')
+
 			.menu-wide
 				.options
 					i.i.icon-menu
