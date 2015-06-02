@@ -59,6 +59,7 @@ class Render
 		@cacheIcosahedron()
 		@cacheHexbin()
 		@cacheGrid()
+		@cacheSpin()
 
 	cacheIcosahedron: =>
 		@cache.icosahedron = {}
@@ -126,6 +127,29 @@ class Render
 		cache.φ = d3.scale.linear()
 			.domain([0, @height])
 			.range([90, -90])
+
+	cacheSpin: =>
+		@cache.spin = {}
+		cache = @cache.spin
+
+		cache.elems = [
+			{
+				id: 'c1'
+				radius: 300
+			}
+			{
+				id: 'c4'
+				radius: 10
+			}
+			{
+				id: 'c2'
+				radius: 100
+			}
+			{
+				id: 'c3'
+				radius: 50
+			}
+		]
 
 	circle: =>
 		freqArray = @player.freq(32)
@@ -243,9 +267,33 @@ class Render
 			.attr('class', 'graticule')
 			.attr('d', cache.path)
 
+	spin: =>
+		cache = @cache.spin
+
+		bars = @svg.selectAll('circle').data cache.elems, (d,i)->
+			return i
+
+		bars.enter()
+			.append('circle')
+				.attr 'class', 'spin'
+				.attr 'cy', '50%'
+				.attr 'cx', '50%'
+				.attr 'id', (d) ->
+					d.id
+				.attr 'r', (d) ->
+					d.radius
+		bars.exit().remove()
+
+		waveData = @compute.total() * 2
+		d3.selectAll('body > svg circle')
+			.attr 'style', 'stroke-width: ' + waveData * 4 + 'px'
+			.attr 'stroke-dashoffset', waveData + 'px'
+			.attr 'stroke-dasharray', waveData / 6 + 'px'
+			.attr 'opacity', waveData / 2200
+
 	draw: =>
 		$('svg#viz').empty()
-		@grid()
+		@spin()
 
 $ ->
 	player = new Player()
