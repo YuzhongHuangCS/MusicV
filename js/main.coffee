@@ -58,6 +58,7 @@ class Render
 
 		@cacheIcosahedron()
 		@cacheHexbin()
+		@cacheGrid()
 
 	cacheIcosahedron: =>
 		@cache.icosahedron = {}
@@ -104,6 +105,27 @@ class Render
 		randomX = d3.random.normal(@width / 2, 2100)
 		cache.ps = d3.range(1024).map ->
 			return randomX()
+
+	cacheGrid: =>
+		@cache.grid = {}
+		cache = @cache.grid
+
+		cache.p = 0
+		cache.projection = d3.geo.gnomonic()
+			.clipAngle(80)
+			.scale(500)
+		cache.path = d3.geo.path().projection(cache.projection)
+		cache.graticule = d3.geo.graticule()
+			.minorStep([5, 5])
+			.minorExtent([[-180, -90], [180, 90 + 1e-4]])
+
+		# lamda / longitude
+		cache.λ = d3.scale.linear().domain([0, @width]).range([-180, 180])
+
+		# phi / latitude
+		cache.φ = d3.scale.linear()
+			.domain([0, @height])
+			.range([90, -90])
 
 	circle: =>
 		freqArray = @player.freq(32)
@@ -156,7 +178,6 @@ class Render
 	hexbin: =>
 		# http://bl.ocks.org/mbostock/4248145 
 		# http://bl.ocks.org/mbostock/4248146
-
 		cache = @cache.hexbin
 		points = d3.zip(cache.ps, @compute.normalize(@height, 0))
 
@@ -197,9 +218,34 @@ class Render
 						else
 							return 0.25 + radius(d.length) / 100
 
+	grid: =>
+		cache = @cache.grid
+
+		xx = @compute.total() / 100 + 1
+		if xx < 1 then xx = 1
+		if xx > 1.1 then xx = 1.1
+		$('body > svg path').attr('style', "transform: scale(#{xx}, #{xx})")
+
+		cache.projection.rotate([cache.λ(cache.p), cache.φ(cache.p)])
+		@svg.selectAll('path').attr 'd', cache.path
+
+		cache.p += 5
+
+		cache.step = Math.floor(@compute.total() / 100 * 60)
+		if cache.step < 5 then cache.step = 5
+
+		cache.graticule = d3.geo.graticule()
+			.minorStep([cache.step, cache.step])
+			.minorExtent([[-180, -90], [180, 90 + 1e-4]])
+
+		cache.grat = @svg.append('path')
+			.datum(cache.graticule)
+			.attr('class', 'graticule')
+			.attr('d', cache.path)
+
 	draw: =>
 		$('svg#viz').empty()
-		@hexbin()
+		@grid()
 
 $ ->
 	player = new Player()
