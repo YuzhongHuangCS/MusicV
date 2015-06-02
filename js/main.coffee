@@ -52,11 +52,13 @@ class Render
 		@height = $(document).height()
 		@player = player
 		@compute = compute
-		@mode = 'circle'
+		@mode = 0
+		@last = 0
+		@visual = [@circle, @icosahedron, @hexbin, @grid, @spin]
+
 		@svg = d3.select('svg#viz')
 		@cache = {}
 
-		@cacheIcosahedron()
 		@cacheHexbin()
 		@cacheGrid()
 		@cacheSpin()
@@ -292,18 +294,36 @@ class Render
 			.attr 'opacity', waveData / 2200
 
 	draw: =>
-		$('svg#viz').empty()
-		@spin()
+		if @last == 1 and @mode != 1
+			$('body > svg').empty()
+		else
+			$('svg#viz').empty()
+
+		if @mode == 1 and @last != 1
+			@cacheIcosahedron()
+
+		@last = @mode
+		@visual[@mode]()
+
 
 class Helper
-	toggleMenu: (action) ->
+	constructor: (render)->
+		@render = render
+
+	visual: (n) ->
+		if n < 0 then n = 6
+		if n > 6 then n = 0
+		@render.mode = n
+		$('.menu li.active').removeClass 'active'
+		$('.menu li[viz-num="' + n + '"]').addClass 'active'
+
+	toggleMenu: (action)->
 		if action == 'toggle'
 			action = if $('.menu').hasClass('menu-open') then 'close' else 'open'
 		if action == 'open'
 			$('.menu').addClass 'menu-open'
 		else
 			$('.menu').removeClass 'menu-open'
-		return
 
 	toggleFullScreen: ->
 		if !document.fullscreenElement and !document.mozFullScreenElement and !document.webkitFullscreenElement and !document.msFullscreenElement
@@ -340,6 +360,9 @@ bindMouse = (helper)->
 	$('.wrapper').on 'click', ->
 		helper.toggleMenu('close')
 
+	$('.menu li').on 'click', ->
+		helper.visual(Number($(this).attr('viz-num')))
+
 $ ->
 	player = new Player()
 	player.play('mp3/forgot.mp3')
@@ -349,5 +372,5 @@ $ ->
 
 	setInterval(render.draw, 40)
 
-	helper = new Helper()
+	helper = new Helper(render)
 	bindMouse(helper)
