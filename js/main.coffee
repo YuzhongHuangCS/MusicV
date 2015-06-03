@@ -19,12 +19,21 @@ class Player
 	playIndex: (index)=>
 		@index = index
 		@play(@playlist[index])
+		@readID3()
 
 	freq: (fftSize) =>
 		@analyser.fftSize = fftSize or 2048
 		freqArray = new Uint8Array(@analyser.frequencyBinCount)
 		@analyser.getByteFrequencyData(freqArray)
 		return freqArray
+
+	readID3: =>
+		ID3.loadTags @audio.src, =>
+			tags = ID3.getAllTags(@audio.src)
+			@renderSongTitle(tags)
+
+	renderSongTitle: (tags) =>
+		$('.song-metadata').html("\"#{tags.title} #{tags.artist}\" [#{@index}/#{@playlist.length}]")
 
 class Compute
 	constructor: (player) ->
