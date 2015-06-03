@@ -3,6 +3,7 @@
 class Player
 	constructor: ->
 		@audio = new Audio()
+		@audio.addEventListener('ended', @songEnded)
 		@audio.autoplay = true
 		@context = new AudioContext()
 		@analyser = @context.createAnalyser()
@@ -26,6 +27,17 @@ class Player
 		freqArray = new Uint8Array(@analyser.frequencyBinCount)
 		@analyser.getByteFrequencyData(freqArray)
 		return freqArray
+
+	songEnded: =>
+		@changeSong(1)
+
+	changeSong: (diff) =>
+		current = @index + diff
+		max = @playlist.length - 1
+		if current > max then current = 0
+		if current < 0 then current = max
+		@playIndex(current)
+		$('.icon-pause').removeClass 'icon-play'
 
 	readID3: =>
 		ID3.loadTags @audio.src, =>
@@ -329,6 +341,9 @@ class Helper
 
 	bindMouse: =>
 		self = this
+		setTimeout =>
+			@toggleMenu('open')
+		, 500
 		$('.icon-expand').on('click', @toggleFullScreen)
 			
 		$('.menu, .icon-menu').on 'mouseenter touchstart', =>
@@ -346,9 +361,6 @@ class Helper
 		$('.icon-question').on 'click', =>
 			@showModal('#modal-about')
 
-		$('.icon-keyboard2').on 'click', =>
-			@showModal('#modal-keyboard')
-
 		$('.md-close').on('click', @hideModals)
 
 		$('#slider').on 'input change', (event)=>
@@ -358,10 +370,10 @@ class Helper
 		$('.icon-play').on('click', @togglePlay)
 
 		$('.icon-forward2').on 'click', =>
-			@changeSong(1)
+			@player.changeSong(1)
 
 		$('.icon-backward2').on 'click', =>
-			@changeSong(-1)
+			@player.changeSong(-1)
 
 		$('.dotstyle li').on 'click', ->
 			self.themeChange(Number($(this).find('a').text()))
@@ -437,14 +449,6 @@ class Helper
 		if audio.paused then audio.play() else audio.pause()
 		$('.icon-pause').toggleClass('icon-play')
 
-	changeSong: (diff) =>
-		current = @player.index + diff
-		max = @player.playlist.length - 1
-		if current > max then current = 0
-		if current < 0 then current = max
-		@player.playIndex(current)
-		$('.icon-pause').removeClass 'icon-play'
-
 	themeChange: (n)=>
 		if n < 0 then n = 5
 		if n > 5 then n = 0
@@ -462,9 +466,13 @@ class Helper
 		if files.length > 0
 			urls = []
 			for file in files
-				urls.push(window.URL.createObjectURL(file))
-			@player.playlist = urls
-			@player.playIndex(0)
+				if file.type.match(/audio.*/)
+					urls.push(window.URL.createObjectURL(file))
+			if urls.length > 0	
+				@player.playlist = urls
+				@player.playIndex(0)
+			else
+				alert('Please drag some music to play')
 
 $ ->
 	player = new Player()

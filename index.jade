@@ -45,53 +45,8 @@ html
 					p This is an experiment project and isn't pretty compatible. Make sure you are using modern web broswer. 
 
 					button.md-close dismiss
-		#modal-keyboard.md-modal.md-effect-1
-			.md-content
-				h3 Keyboard Shortcuts
-				div
-					i.icon-keyboard
-					ul
-						li
-							a.key(href='#')
-								span 1
-							|  through 
-							a.key(href='#')
-								span 7
-							|  selects a visualization
-						li
-							a.key(href='#', style='width: 58px;')
-								span space
-							|  play / pause
-						li
-							a.key(href='#')
-								span f
-							| ull screen
-						li
-							a.key(href='#')
-								span m
-							| enu
-						li
-							a.key(href='#')
-								span c
-							| hange song
-						li
-							a.key(href='#')
-								span l
-							| oop random colors and visualizers
-						li
-							a.key(href='#')
-								span ▲
-							a.key(href='#')
-								span ▼
-							|  cycles vizualization
-						li
-							a.key(href='#')
-								span ◀
-							a.key(href='#')
-								span ▶
-							|  cycles color palettes
-					button.md-close dismiss
-		.menu.menu-open
+
+		.menu
 			ul
 				li#circle.active(viz-num='0')
 					img(src='img/circle.png')
@@ -120,7 +75,6 @@ html
 				.options
 					i.i.icon-menu
 					i.i.icon-question
-					i.i.icon-keyboard2
 					i.i.icon-expand
 				.slider
 					span adjust sensitivity
