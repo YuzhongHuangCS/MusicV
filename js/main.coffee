@@ -13,9 +13,12 @@ class Player
 		@index = 0
 
 	play: (path) =>
-		@audio.src = path
-		@source = @context.createMediaElementSource(@audio)
-		@source.connect(@analyser)
+		if @audio.src
+			@audio.src = path
+		else
+			@audio.src = path
+			@source = @context.createMediaElementSource(@audio)
+			@source.connect(@analyser)
 
 	playIndex: (index)=>
 		@index = index
@@ -45,7 +48,7 @@ class Player
 			@renderSongTitle(tags)
 
 	renderSongTitle: (tags) =>
-		$('.song-metadata').html("\"#{tags.title} #{tags.artist}\" [#{@index}/#{@playlist.length}]")
+		$('.song-metadata').html("\"#{tags.title} #{tags.artist}\" [#{@index + 1}/#{@playlist.length}]")
 
 class Compute
 	constructor: (player) ->
